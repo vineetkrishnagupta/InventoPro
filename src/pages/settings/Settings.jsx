@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Settings, Building2, Palette, Save, User } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Settings, Building2, Palette, Save, User, Sun, Moon, Monitor, Check, Sparkles } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { useTheme } from '../../context/ThemeContext'
 import Button from '../../components/common/Button'
@@ -13,12 +13,12 @@ import clsx from 'clsx'
 const TABS = [
   { id: 'profile', label: 'My Profile', icon: User },
   { id: 'business', label: 'Business', icon: Building2 },
-  { id: 'app', label: 'Application', icon: Palette },
+  { id: 'app', label: 'Appearance & App', icon: Palette },
 ]
 
 export default function SettingsPage() {
   const { user, profile, updateProfile } = useAuth()
-  const { isDark, toggleTheme } = useTheme()
+  const { isDark, themeMode, setThemeMode, accentColor, setAccentColor, accentColors } = useTheme()
   const [activeTab, setActiveTab] = useState('profile')
   const [saving, setSaving] = useState(false)
 
@@ -212,44 +212,169 @@ export default function SettingsPage() {
           )}
 
           {activeTab === 'app' && (
-            <div className="card p-6">
-              <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-4">Application Settings</h2>
-              <div className="space-y-5">
-                <div className="flex items-center justify-between py-3 border-b border-gray-100 dark:border-gray-800">
-                  <div>
-                    <p className="text-sm font-medium text-gray-900 dark:text-white">Dark Mode</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Toggle between light and dark theme</p>
+            <div className="space-y-6">
+              {/* Theme & Appearance Section */}
+              <div className="card p-6">
+                <div className="flex items-center gap-2 mb-2">
+                  <Palette className="w-5 h-5 text-primary-600" />
+                  <h2 className="text-base font-semibold text-gray-900 dark:text-white">Theme & Appearance</h2>
+                </div>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-6">
+                  Customize the look, color scheme, and mode of your InventoPro workspace
+                </p>
+
+                {/* Theme Mode Selector (Light, Dark, System) */}
+                <div className="mb-6">
+                  <label className="label mb-2">Theme Mode</label>
+                  <div className="grid grid-cols-3 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setThemeMode('light')}
+                      className={clsx(
+                        'flex flex-col items-center justify-center gap-2 p-3.5 rounded-xl border text-sm font-medium transition-all',
+                        themeMode === 'light'
+                          ? 'border-primary-600 bg-primary-50/60 dark:bg-primary-950/40 text-primary-700 dark:text-primary-300 ring-2 ring-primary-500/20'
+                          : 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600 bg-white dark:bg-gray-800'
+                      )}
+                    >
+                      <Sun className="w-5 h-5 text-amber-500" />
+                      <span>Light</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setThemeMode('dark')}
+                      className={clsx(
+                        'flex flex-col items-center justify-center gap-2 p-3.5 rounded-xl border text-sm font-medium transition-all',
+                        themeMode === 'dark'
+                          ? 'border-primary-600 bg-primary-50/60 dark:bg-primary-950/40 text-primary-700 dark:text-primary-300 ring-2 ring-primary-500/20'
+                          : 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600 bg-white dark:bg-gray-800'
+                      )}
+                    >
+                      <Moon className="w-5 h-5 text-indigo-400" />
+                      <span>Dark</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setThemeMode('system')}
+                      className={clsx(
+                        'flex flex-col items-center justify-center gap-2 p-3.5 rounded-xl border text-sm font-medium transition-all',
+                        themeMode === 'system'
+                          ? 'border-primary-600 bg-primary-50/60 dark:bg-primary-950/40 text-primary-700 dark:text-primary-300 ring-2 ring-primary-500/20'
+                          : 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600 bg-white dark:bg-gray-800'
+                      )}
+                    >
+                      <Monitor className="w-5 h-5 text-slate-500" />
+                      <span>System</span>
+                    </button>
                   </div>
-                  <button
-                    onClick={toggleTheme}
-                    className={clsx(
-                      'relative inline-flex h-6 w-11 items-center rounded-full transition-colors',
-                      isDark ? 'bg-primary-600' : 'bg-gray-200 dark:bg-gray-700'
-                    )}
-                  >
-                    <span className={clsx('inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform', isDark ? 'translate-x-6' : 'translate-x-1')} />
-                  </button>
                 </div>
 
+                {/* Primary Accent Color Selection */}
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="label">Primary Accent Color</label>
+                    <span className="text-xs text-primary-600 font-medium capitalize">
+                      {accentColors?.find(c => c.id === accentColor)?.name}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-3">
+                    {accentColors?.map((c) => {
+                      const isSelected = accentColor === c.id
+                      return (
+                        <button
+                          key={c.id}
+                          type="button"
+                          onClick={() => {
+                            setAccentColor(c.id)
+                            toast.success(`Theme color changed to ${c.name}`, { icon: '🎨', duration: 2000 })
+                          }}
+                          className={clsx(
+                            'group flex flex-col items-center gap-2 p-2.5 rounded-xl border transition-all text-xs font-medium',
+                            isSelected
+                              ? 'border-gray-400 dark:border-gray-500 ring-2 ring-primary-500/30 bg-gray-50 dark:bg-gray-800'
+                              : 'border-gray-200 dark:border-gray-700/80 hover:border-gray-300 dark:hover:border-gray-600 bg-white dark:bg-gray-850'
+                          )}
+                        >
+                          <div
+                            className="w-7 h-7 rounded-full shadow-sm flex items-center justify-center transition-transform group-hover:scale-110"
+                            style={{ backgroundColor: c.colorHex }}
+                          >
+                            {isSelected && <Check className="w-4 h-4 text-white drop-shadow" />}
+                          </div>
+                          <span className={clsx('truncate text-[11px]', isSelected ? 'text-gray-900 dark:text-white font-semibold' : 'text-gray-600 dark:text-gray-400')}>
+                            {c.name.split(' ')[0]}
+                          </span>
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+
+                {/* Live Preview Box */}
+                <div className="mt-6 p-4 rounded-xl bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700/60">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Sparkles className="w-4 h-4 text-primary-600" />
+                    <span className="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                      Live Color Preview
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <Button variant="primary" size="sm">Primary Button</Button>
+                    <Button variant="secondary" size="sm">Secondary</Button>
+                    <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-primary-100 text-primary-800 dark:bg-primary-900/40 dark:text-primary-300 border border-primary-200 dark:border-primary-800">
+                      Primary Badge
+                    </span>
+                    <span className="text-xs font-medium text-primary-600 hover:underline cursor-pointer">
+                      Primary Link Sample
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* General Application Preferences */}
+              <div className="card p-6">
+                <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-4">Application Preferences</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Input label="Low Stock Threshold" type="number" min="1" value={appForm.lowStockThreshold || 5}
+                  <Input
+                    label="Low Stock Threshold"
+                    type="number"
+                    min="1"
+                    value={appForm.lowStockThreshold || 5}
                     onChange={(e) => setAppForm({ ...appForm, lowStockThreshold: e.target.value })}
-                    hint="Alert when stock falls below this quantity" />
-                  <Select label="Currency" value={appForm.currency || 'INR'}
-                    options={[{ value: 'INR', label: 'INR (₹)' }, { value: 'USD', label: 'USD ($)' }, { value: 'EUR', label: 'EUR (€)' }]}
-                    onChange={(e) => setAppForm({ ...appForm, currency: e.target.value })} placeholder="" />
-                  <Select label="Date Format" value={appForm.dateFormat || 'dd MMM yyyy'}
+                    hint="Alert when stock falls below this quantity"
+                  />
+                  <Select
+                    label="Currency"
+                    value={appForm.currency || 'INR'}
+                    options={[
+                      { value: 'INR', label: 'INR (₹)' },
+                      { value: 'USD', label: 'USD ($)' },
+                      { value: 'EUR', label: 'EUR (€)' },
+                      { value: 'GBP', label: 'GBP (£)' },
+                    ]}
+                    onChange={(e) => setAppForm({ ...appForm, currency: e.target.value })}
+                    placeholder=""
+                  />
+                  <Select
+                    label="Date Format"
+                    value={appForm.dateFormat || 'dd MMM yyyy'}
                     options={[
                       { value: 'dd MMM yyyy', label: 'DD Mon YYYY (25 Sep 2026)' },
                       { value: 'MM/dd/yyyy', label: 'MM/DD/YYYY (09/25/2026)' },
                       { value: 'dd/MM/yyyy', label: 'DD/MM/YYYY (25/09/2026)' },
                       { value: 'yyyy-MM-dd', label: 'YYYY-MM-DD (2026-09-25)' },
                     ]}
-                    onChange={(e) => setAppForm({ ...appForm, dateFormat: e.target.value })} placeholder="" />
+                    onChange={(e) => setAppForm({ ...appForm, dateFormat: e.target.value })}
+                    placeholder=""
+                  />
                 </div>
 
-                <div className="flex justify-end">
-                  <Button variant="primary" icon={Save} onClick={handleAppSave}>Save App Settings</Button>
+                <div className="flex justify-end mt-5">
+                  <Button variant="primary" icon={Save} onClick={handleAppSave}>
+                    Save Preferences
+                  </Button>
                 </div>
               </div>
             </div>
