@@ -144,25 +144,6 @@ export default function Sidebar({ isOpen, onClose, isCollapsed, toggleCollapse }
           )}
         </div>
 
-        {/* User info */}
-        <div className={clsx("py-3 border-b border-slate-700/50 flex-shrink-0 flex items-center", isCollapsed ? "justify-center px-0" : "px-4 gap-3")}>
-          <div className="w-8 h-8 rounded-full bg-primary-600 flex items-center justify-center flex-shrink-0">
-            <span className="text-white text-sm font-medium">
-              {profile?.full_name?.charAt(0)?.toUpperCase() || 'U'}
-            </span>
-          </div>
-          {!isCollapsed && (
-            <div className="min-w-0">
-              <p className="text-white text-sm font-medium truncate">
-                {profile?.full_name || 'User'}
-              </p>
-              <p className="text-slate-400 text-xs capitalize">
-                {profile?.role || 'viewer'}
-              </p>
-            </div>
-          )}
-        </div>
-
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-6 no-scrollbar">
           {menuGroups.map((group, gi) => {
