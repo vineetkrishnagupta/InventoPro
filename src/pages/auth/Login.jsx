@@ -122,31 +122,14 @@ export default function Login() {
               </Link>
             </div>
 
-            <div className="space-y-3">
-              <Button
-                type="submit"
-                variant="primary"
-                loading={loading}
-                className="w-full justify-center py-2.5"
-              >
-                Sign In
-              </Button>
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={() => {
-                  setForm({ ...form, email: 'demo@inventopro.in', password: 'demo1234' })
-                  // Optional: Automatically submit after a short delay
-                  setTimeout(() => {
-                    const btn = document.querySelector('button[type="submit"]')
-                    if (btn) btn.click()
-                  }, 100)
-                }}
-                className="w-full justify-center py-2.5"
-              >
-                Try Demo Account
-              </Button>
-            </div>
+            <Button
+              type="submit"
+              variant="primary"
+              loading={loading}
+              className="w-full justify-center py-2.5"
+            >
+              Sign In
+            </Button>
 
             <p className="mt-4 text-center text-sm text-gray-600 dark:text-gray-400">
               Don't have an account?{' '}
@@ -154,6 +137,14 @@ export default function Login() {
                 Sign up
               </Link>
             </p>
+
+            <div className="mt-6 p-4 bg-primary-50 dark:bg-primary-900/20 rounded-xl border border-primary-100 dark:border-primary-800/50">
+              <p className="text-sm font-medium text-primary-800 dark:text-primary-300 mb-1">Demo Credentials:</p>
+              <p className="text-xs text-primary-600 dark:text-primary-400 font-mono">
+                Email: demo@inventopro.in<br />
+                Password: demo1234
+              </p>
+            </div>
           </form>
         </div>
 
