@@ -104,25 +104,42 @@ export default function Sidebar({ isOpen, onClose, isCollapsed, toggleCollapse }
           isCollapsed ? 'w-[72px]' : 'w-64'
         )}
       >
-        {/* Logo */}
-        <div className={clsx("flex items-center h-16 px-4 border-b border-slate-700/50 flex-shrink-0", isCollapsed ? "justify-center" : "justify-between")}>
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-primary-600 flex items-center justify-center flex-shrink-0">
-              <BarChart2 className="w-5 h-5 text-white" />
-            </div>
-            {!isCollapsed && (
-              <div>
-                <span className="text-white font-semibold text-sm leading-tight">InventoPro</span>
-                <p className="text-slate-500 text-xs leading-tight">Management System</p>
+        {/* Logo & Toggle */}
+        <div className={clsx("flex items-center h-16 border-b border-slate-700/50 flex-shrink-0", isCollapsed ? "justify-center" : "px-4 justify-between")}>
+          {!isCollapsed ? (
+            <>
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-primary-600 flex items-center justify-center flex-shrink-0">
+                  <BarChart2 className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <span className="text-white font-semibold text-sm leading-tight">InventoPro</span>
+                  <p className="text-slate-500 text-xs leading-tight">Management System</p>
+                </div>
               </div>
-            )}
-          </div>
-          {!isCollapsed && (
-            <button
-              onClick={onClose}
-              className="lg:hidden p-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
+              <div className="flex items-center">
+                <button
+                  onClick={onClose}
+                  className="lg:hidden p-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+                <button 
+                  onClick={toggleCollapse}
+                  className="hidden lg:flex p-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors ml-1"
+                  title="Collapse sidebar"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+              </div>
+            </>
+          ) : (
+            <button 
+              onClick={toggleCollapse}
+              className="hidden lg:flex p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
+              title="Expand sidebar"
             >
-              <X className="w-4 h-4" />
+              <ChevronRight className="w-6 h-6" />
             </button>
           )}
         </div>
@@ -187,16 +204,9 @@ export default function Sidebar({ isOpen, onClose, isCollapsed, toggleCollapse }
           })}
         </nav>
 
-        {/* Version & Toggle */}
-        <div className={clsx("px-4 py-3 border-t border-slate-700/50 flex items-center", isCollapsed ? "justify-center" : "justify-between")}>
-          {!isCollapsed && <p className="text-slate-600 text-xs">v1.0.0</p>}
-          <button 
-            onClick={toggleCollapse}
-            className="hidden lg:flex p-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
-            title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-          >
-            {isCollapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
-          </button>
+        {/* Version */}
+        <div className="px-4 py-3 border-t border-slate-700/50">
+          {!isCollapsed && <p className="text-slate-600 text-xs text-center">v1.0.0 · InventoPro</p>}
         </div>
       </aside>
     </>
