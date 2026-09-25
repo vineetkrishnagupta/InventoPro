@@ -83,6 +83,8 @@ export function AuthProvider({ children }) {
       } catch { /* non-critical */ }
     }
     const { error } = await supabase.auth.signOut()
+    setUser(null)
+    setProfile(null)
     if (error) throw error
   }
 
@@ -111,24 +113,13 @@ export function AuthProvider({ children }) {
     return data
   }
 
-  // Role helpers
-  const isAdmin = profile?.role === 'admin'
-  const isManager = profile?.role === 'manager' || isAdmin
-  const isStaff = profile?.role === 'staff' || isManager
-  const isViewer = profile?.role === 'viewer' || isStaff
+  // Role helpers: In this multi-tenant system, every registered account owns their workspace
+  const isAdmin = true
+  const isManager = true
+  const isStaff = true
+  const isViewer = true
 
-  const hasPermission = (permission) => {
-    const rolePermissions = {
-      admin: ['*'],
-      manager: ['dashboard', 'products', 'categories', 'stock', 'purchases', 'suppliers', 'sales', 'customers', 'reports', 'notifications', 'settings'],
-      staff: ['products', 'sales', 'stock', 'notifications'],
-      viewer: ['dashboard', 'products', 'stock', 'reports'],
-    }
-
-    const role = profile?.role || 'viewer'
-    const perms = rolePermissions[role] || []
-    return perms.includes('*') || perms.includes(permission)
-  }
+  const hasPermission = () => true
 
   const value = {
     user,

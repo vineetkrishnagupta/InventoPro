@@ -46,7 +46,7 @@ export default function Signup() {
         options: {
           data: {
             full_name: form.fullName,
-            role: 'viewer' // Default role for self-signups
+            role: 'admin' // Owner of their own store/workspace
           }
         }
       })

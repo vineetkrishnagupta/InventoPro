@@ -34,17 +34,37 @@ export default function SettingsPage() {
   const [pwdErrors, setPwdErrors] = useState({})
   const [changingPwd, setChangingPwd] = useState(false)
 
-  // Business settings (stored in localStorage for demo)
+  const bizStorageKey = user ? `ims_business_settings_${user.id}` : 'ims_business_settings'
+  const appStorageKey = user ? `ims_app_settings_${user.id}` : 'ims_app_settings'
+
+  // Business settings (stored per user in localStorage)
   const [businessForm, setBizForm] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('ims_business_settings') || '{}') }
-    catch { return {} }
+    try {
+      const key = user ? `ims_business_settings_${user.id}` : 'ims_business_settings'
+      return JSON.parse(localStorage.getItem(key) || '{}')
+    } catch { return {} }
   })
 
   // App settings
   const [appForm, setAppForm] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('ims_app_settings') || '{"lowStockThreshold": 5, "currency": "INR", "dateFormat": "dd MMM yyyy"}') }
-    catch { return { lowStockThreshold: 5, currency: 'INR', dateFormat: 'dd MMM yyyy' } }
+    try {
+      const key = user ? `ims_app_settings_${user.id}` : 'ims_app_settings'
+      return JSON.parse(localStorage.getItem(key) || '{"lowStockThreshold": 5, "currency": "INR", "dateFormat": "dd MMM yyyy"}')
+    } catch { return { lowStockThreshold: 5, currency: 'INR', dateFormat: 'dd MMM yyyy' } }
   })
+
+  useEffect(() => {
+    if (user?.id) {
+      try {
+        const biz = JSON.parse(localStorage.getItem(`ims_business_settings_${user.id}`) || '{}')
+        setBizForm(biz)
+      } catch {}
+      try {
+        const app = JSON.parse(localStorage.getItem(`ims_app_settings_${user.id}`) || '{"lowStockThreshold": 5, "currency": "INR", "dateFormat": "dd MMM yyyy"}')
+        setAppForm(app)
+      } catch {}
+    }
+  }, [user?.id])
 
   const handleProfileSave = async () => {
     if (!profileForm.full_name?.trim()) { setProfileErrors({ full_name: 'Name is required' }); return }
@@ -73,12 +93,12 @@ export default function SettingsPage() {
   }
 
   const handleBizSave = () => {
-    localStorage.setItem('ims_business_settings', JSON.stringify(businessForm))
+    localStorage.setItem(bizStorageKey, JSON.stringify(businessForm))
     toast.success('Business settings saved')
   }
 
   const handleAppSave = () => {
-    localStorage.setItem('ims_app_settings', JSON.stringify(appForm))
+    localStorage.setItem(appStorageKey, JSON.stringify(appForm))
     toast.success('Application settings saved')
   }
 

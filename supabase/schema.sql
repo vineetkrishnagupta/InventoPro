@@ -1,5 +1,5 @@
 -- ============================================================
--- InventoPro - Complete Database Schema
+-- InventoPro - Complete Database Schema (Multi-Tenant / Isolated)
 -- Run this in your Supabase SQL Editor
 -- ============================================================
 
@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS profiles (
   full_name TEXT,
   email TEXT,
   phone TEXT,
-  role TEXT NOT NULL DEFAULT 'viewer' CHECK (role IN ('admin', 'manager', 'staff', 'viewer')),
+  role TEXT NOT NULL DEFAULT 'admin' CHECK (role IN ('admin', 'manager', 'staff', 'viewer')),
   avatar_url TEXT,
   status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'inactive')),
   created_at TIMESTAMPTZ DEFAULT NOW(),
@@ -26,6 +26,7 @@ CREATE TABLE IF NOT EXISTS profiles (
 -- Categories
 CREATE TABLE IF NOT EXISTS categories (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE DEFAULT auth.uid(),
   name TEXT NOT NULL,
   description TEXT,
   status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'inactive')),
@@ -36,6 +37,7 @@ CREATE TABLE IF NOT EXISTS categories (
 -- Suppliers
 CREATE TABLE IF NOT EXISTS suppliers (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE DEFAULT auth.uid(),
   name TEXT NOT NULL,
   company_name TEXT,
   phone TEXT,
@@ -51,6 +53,7 @@ CREATE TABLE IF NOT EXISTS suppliers (
 -- Customers
 CREATE TABLE IF NOT EXISTS customers (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE DEFAULT auth.uid(),
   name TEXT NOT NULL,
   phone TEXT,
   email TEXT,
@@ -65,8 +68,9 @@ CREATE TABLE IF NOT EXISTS customers (
 -- Products
 CREATE TABLE IF NOT EXISTS products (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE DEFAULT auth.uid(),
   name TEXT NOT NULL,
-  sku TEXT NOT NULL UNIQUE,
+  sku TEXT NOT NULL,
   barcode TEXT,
   category_id UUID REFERENCES categories(id),
   supplier_id UUID REFERENCES suppliers(id),
@@ -85,6 +89,7 @@ CREATE TABLE IF NOT EXISTS products (
 -- Inventory
 CREATE TABLE IF NOT EXISTS inventory (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE DEFAULT auth.uid(),
   product_id UUID NOT NULL UNIQUE REFERENCES products(id) ON DELETE CASCADE,
   quantity NUMERIC(12, 2) DEFAULT 0,
   reserved_quantity NUMERIC(12, 2) DEFAULT 0,
@@ -94,7 +99,8 @@ CREATE TABLE IF NOT EXISTS inventory (
 -- Purchases
 CREATE TABLE IF NOT EXISTS purchases (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  purchase_number TEXT NOT NULL UNIQUE,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE DEFAULT auth.uid(),
+  purchase_number TEXT NOT NULL,
   supplier_id UUID REFERENCES suppliers(id),
   purchase_date DATE NOT NULL DEFAULT CURRENT_DATE,
   subtotal NUMERIC(12, 2) DEFAULT 0,
@@ -112,6 +118,7 @@ CREATE TABLE IF NOT EXISTS purchases (
 -- Purchase Items
 CREATE TABLE IF NOT EXISTS purchase_items (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE DEFAULT auth.uid(),
   purchase_id UUID NOT NULL REFERENCES purchases(id) ON DELETE CASCADE,
   product_id UUID NOT NULL REFERENCES products(id),
   quantity NUMERIC(12, 2) NOT NULL DEFAULT 0,
@@ -124,7 +131,8 @@ CREATE TABLE IF NOT EXISTS purchase_items (
 -- Sales
 CREATE TABLE IF NOT EXISTS sales (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  invoice_number TEXT NOT NULL UNIQUE,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE DEFAULT auth.uid(),
+  invoice_number TEXT NOT NULL,
   customer_id UUID REFERENCES customers(id),
   sale_date DATE NOT NULL DEFAULT CURRENT_DATE,
   subtotal NUMERIC(12, 2) DEFAULT 0,
@@ -142,6 +150,7 @@ CREATE TABLE IF NOT EXISTS sales (
 -- Sale Items
 CREATE TABLE IF NOT EXISTS sale_items (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE DEFAULT auth.uid(),
   sale_id UUID NOT NULL REFERENCES sales(id) ON DELETE CASCADE,
   product_id UUID NOT NULL REFERENCES products(id),
   quantity NUMERIC(12, 2) NOT NULL DEFAULT 0,
@@ -154,6 +163,7 @@ CREATE TABLE IF NOT EXISTS sale_items (
 -- Stock Adjustments
 CREATE TABLE IF NOT EXISTS stock_adjustments (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE DEFAULT auth.uid(),
   product_id UUID NOT NULL REFERENCES products(id),
   adjustment_type TEXT NOT NULL CHECK (adjustment_type IN ('opening_stock', 'damage', 'expired', 'lost', 'correction', 'return', 'other')),
   quantity NUMERIC(12, 2) NOT NULL,
@@ -167,6 +177,7 @@ CREATE TABLE IF NOT EXISTS stock_adjustments (
 -- Payments
 CREATE TABLE IF NOT EXISTS payments (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE DEFAULT auth.uid(),
   transaction_type TEXT NOT NULL CHECK (transaction_type IN ('purchase', 'sale')),
   transaction_id UUID NOT NULL,
   amount NUMERIC(12, 2) NOT NULL DEFAULT 0,
@@ -201,11 +212,28 @@ CREATE TABLE IF NOT EXISTS notifications (
 );
 
 -- ─────────────────────────────────────────────────
--- INDEXES
+-- INDEXES & UNIQUE CONSTRAINTS
 -- ─────────────────────────────────────────────────
 
-CREATE INDEX IF NOT EXISTS idx_products_sku ON products(sku);
-CREATE INDEX IF NOT EXISTS idx_products_barcode ON products(barcode) WHERE barcode IS NOT NULL;
+-- Per-user unique indexes
+CREATE UNIQUE INDEX IF NOT EXISTS idx_products_user_sku ON products(user_id, sku);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_purchases_user_number ON purchases(user_id, purchase_number);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_sales_user_invoice ON sales(user_id, invoice_number);
+
+-- User ID indexes
+CREATE INDEX IF NOT EXISTS idx_categories_user_id ON categories(user_id);
+CREATE INDEX IF NOT EXISTS idx_suppliers_user_id ON suppliers(user_id);
+CREATE INDEX IF NOT EXISTS idx_customers_user_id ON customers(user_id);
+CREATE INDEX IF NOT EXISTS idx_products_user_id ON products(user_id);
+CREATE INDEX IF NOT EXISTS idx_inventory_user_id ON inventory(user_id);
+CREATE INDEX IF NOT EXISTS idx_purchases_user_id ON purchases(user_id);
+CREATE INDEX IF NOT EXISTS idx_purchase_items_user_id ON purchase_items(user_id);
+CREATE INDEX IF NOT EXISTS idx_sales_user_id ON sales(user_id);
+CREATE INDEX IF NOT EXISTS idx_sale_items_user_id ON sale_items(user_id);
+CREATE INDEX IF NOT EXISTS idx_stock_adjustments_user_id ON stock_adjustments(user_id);
+CREATE INDEX IF NOT EXISTS idx_payments_user_id ON payments(user_id);
+
+-- Lookup indexes
 CREATE INDEX IF NOT EXISTS idx_products_category_id ON products(category_id);
 CREATE INDEX IF NOT EXISTS idx_products_supplier_id ON products(supplier_id);
 CREATE INDEX IF NOT EXISTS idx_inventory_product_id ON inventory(product_id);
@@ -232,9 +260,11 @@ BEGIN
     NEW.id,
     COALESCE(NEW.raw_user_meta_data->>'full_name', split_part(NEW.email, '@', 1)),
     NEW.email,
-    COALESCE(NEW.raw_user_meta_data->>'role', 'viewer')
+    'admin'
   )
-  ON CONFLICT (id) DO NOTHING;
+  ON CONFLICT (id) DO UPDATE SET
+    full_name = COALESCE(EXCLUDED.full_name, profiles.full_name),
+    email = COALESCE(EXCLUDED.email, profiles.email);
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
@@ -245,7 +275,7 @@ CREATE TRIGGER on_auth_user_created
   FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
 
 -- ─────────────────────────────────────────────────
--- RPC: create_purchase (atomic)
+-- RPC: create_purchase (atomic, per-user isolated)
 -- ─────────────────────────────────────────────────
 
 CREATE OR REPLACE FUNCTION create_purchase(
@@ -256,12 +286,14 @@ RETURNS UUID AS $$
 DECLARE
   purchase_id UUID;
   item JSONB;
-  cur_qty NUMERIC;
+  v_user_id UUID;
 BEGIN
+  v_user_id := COALESCE((purchase_data->>'user_id')::UUID, (purchase_data->>'created_by')::UUID, auth.uid());
+
   -- Insert purchase
   INSERT INTO purchases (
     purchase_number, supplier_id, purchase_date, subtotal, discount, tax,
-    total_amount, payment_status, payment_method, notes, created_by
+    total_amount, payment_status, payment_method, notes, created_by, user_id
   )
   VALUES (
     purchase_data->>'purchase_number',
@@ -274,14 +306,15 @@ BEGIN
     purchase_data->>'payment_status',
     purchase_data->>'payment_method',
     purchase_data->>'notes',
-    (purchase_data->>'created_by')::UUID
+    (purchase_data->>'created_by')::UUID,
+    v_user_id
   )
   RETURNING id INTO purchase_id;
 
   -- Insert items and update inventory
   FOR item IN SELECT * FROM jsonb_array_elements(items_data) LOOP
     -- Insert purchase item
-    INSERT INTO purchase_items (purchase_id, product_id, quantity, purchase_price, tax_percent, discount, total)
+    INSERT INTO purchase_items (purchase_id, product_id, quantity, purchase_price, tax_percent, discount, total, user_id)
     VALUES (
       purchase_id,
       (item->>'product_id')::UUID,
@@ -289,33 +322,36 @@ BEGIN
       (item->>'purchase_price')::NUMERIC,
       (item->>'tax_percent')::NUMERIC,
       (item->>'discount')::NUMERIC,
-      (item->>'total')::NUMERIC
+      (item->>'total')::NUMERIC,
+      v_user_id
     );
 
     -- Update or insert inventory
-    INSERT INTO inventory (product_id, quantity, updated_at)
-    VALUES ((item->>'product_id')::UUID, (item->>'quantity')::NUMERIC, NOW())
+    INSERT INTO inventory (product_id, quantity, updated_at, user_id)
+    VALUES ((item->>'product_id')::UUID, (item->>'quantity')::NUMERIC, NOW(), v_user_id)
     ON CONFLICT (product_id) DO UPDATE
     SET quantity = inventory.quantity + (item->>'quantity')::NUMERIC,
-        updated_at = NOW();
+        updated_at = NOW(),
+        user_id = v_user_id;
   END LOOP;
 
   -- Create payment record if paid
   IF purchase_data->>'payment_status' = 'paid' THEN
-    INSERT INTO payments (transaction_type, transaction_id, amount, payment_method, payment_date, created_by)
+    INSERT INTO payments (transaction_type, transaction_id, amount, payment_method, payment_date, created_by, user_id)
     VALUES (
       'purchase', purchase_id,
       (purchase_data->>'total_amount')::NUMERIC,
       purchase_data->>'payment_method',
       (purchase_data->>'purchase_date')::DATE,
-      (purchase_data->>'created_by')::UUID
+      (purchase_data->>'created_by')::UUID,
+      v_user_id
     );
   END IF;
 
   -- Audit log
   INSERT INTO audit_logs (user_id, action, module, record_id, description)
   VALUES (
-    (purchase_data->>'created_by')::UUID,
+    v_user_id,
     'CREATE_PURCHASE', 'PURCHASES', purchase_id,
     'Created purchase order: ' || (purchase_data->>'purchase_number')
   );
@@ -325,7 +361,7 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- ─────────────────────────────────────────────────
--- RPC: create_sale (atomic, with stock validation)
+-- RPC: create_sale (atomic, per-user isolated)
 -- ─────────────────────────────────────────────────
 
 CREATE OR REPLACE FUNCTION create_sale(
@@ -338,7 +374,10 @@ DECLARE
   item JSONB;
   cur_qty NUMERIC;
   product_name TEXT;
+  v_user_id UUID;
 BEGIN
+  v_user_id := COALESCE((sale_data->>'user_id')::UUID, (sale_data->>'created_by')::UUID, auth.uid());
+
   -- Validate stock for all items FIRST
   FOR item IN SELECT * FROM jsonb_array_elements(items_data) LOOP
     SELECT i.quantity, p.name
@@ -348,23 +387,23 @@ BEGIN
     WHERE i.product_id = (item->>'product_id')::UUID;
 
     IF cur_qty IS NULL THEN
-      RAISE EXCEPTION 'Product not found in inventory';
+      RAISE EXCEPTION 'Product % is not found in inventory', (item->>'product_id');
     END IF;
 
-    IF (item->>'quantity')::NUMERIC > cur_qty THEN
-      RAISE EXCEPTION 'Insufficient stock for "%". Available: %, Requested: %',
-        product_name, cur_qty, (item->>'quantity')::NUMERIC;
+    IF cur_qty < (item->>'quantity')::NUMERIC THEN
+      RAISE EXCEPTION 'Insufficient stock for product "%". Available: %, Requested: %',
+        COALESCE(product_name, 'Unknown'), cur_qty, (item->>'quantity')::NUMERIC;
     END IF;
   END LOOP;
 
   -- Insert sale
   INSERT INTO sales (
     invoice_number, customer_id, sale_date, subtotal, discount, tax,
-    total_amount, payment_status, payment_method, notes, created_by
+    total_amount, payment_status, payment_method, notes, created_by, user_id
   )
   VALUES (
     sale_data->>'invoice_number',
-    NULLIF(sale_data->>'customer_id', '')::UUID,
+    (sale_data->>'customer_id')::UUID,
     (sale_data->>'sale_date')::DATE,
     (sale_data->>'subtotal')::NUMERIC,
     (sale_data->>'discount')::NUMERIC,
@@ -373,13 +412,15 @@ BEGIN
     sale_data->>'payment_status',
     sale_data->>'payment_method',
     sale_data->>'notes',
-    (sale_data->>'created_by')::UUID
+    (sale_data->>'created_by')::UUID,
+    v_user_id
   )
   RETURNING id INTO sale_id;
 
   -- Insert items and deduct inventory
   FOR item IN SELECT * FROM jsonb_array_elements(items_data) LOOP
-    INSERT INTO sale_items (sale_id, product_id, quantity, selling_price, tax_percent, discount, total)
+    -- Insert sale item
+    INSERT INTO sale_items (sale_id, product_id, quantity, selling_price, tax_percent, discount, total, user_id)
     VALUES (
       sale_id,
       (item->>'product_id')::UUID,
@@ -387,10 +428,11 @@ BEGIN
       (item->>'selling_price')::NUMERIC,
       (item->>'tax_percent')::NUMERIC,
       (item->>'discount')::NUMERIC,
-      (item->>'total')::NUMERIC
+      (item->>'total')::NUMERIC,
+      v_user_id
     );
 
-    -- Deduct from inventory
+    -- Deduct stock
     UPDATE inventory
     SET quantity = quantity - (item->>'quantity')::NUMERIC,
         updated_at = NOW()
@@ -399,20 +441,21 @@ BEGIN
 
   -- Create payment record if paid
   IF sale_data->>'payment_status' = 'paid' THEN
-    INSERT INTO payments (transaction_type, transaction_id, amount, payment_method, payment_date, created_by)
+    INSERT INTO payments (transaction_type, transaction_id, amount, payment_method, payment_date, created_by, user_id)
     VALUES (
       'sale', sale_id,
       (sale_data->>'total_amount')::NUMERIC,
       sale_data->>'payment_method',
       (sale_data->>'sale_date')::DATE,
-      (sale_data->>'created_by')::UUID
+      (sale_data->>'created_by')::UUID,
+      v_user_id
     );
   END IF;
 
   -- Audit log
   INSERT INTO audit_logs (user_id, action, module, record_id, description)
   VALUES (
-    (sale_data->>'created_by')::UUID,
+    v_user_id,
     'CREATE_SALE', 'SALES', sale_id,
     'Created sale invoice: ' || (sale_data->>'invoice_number')
   );
@@ -422,7 +465,7 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- ─────────────────────────────────────────────────
--- RPC: adjust_stock (atomic)
+-- RPC: adjust_stock (atomic, per-user isolated)
 -- ─────────────────────────────────────────────────
 
 CREATE OR REPLACE FUNCTION adjust_stock(
@@ -464,9 +507,9 @@ BEGIN
 
   -- Create adjustment record
   INSERT INTO stock_adjustments (
-    product_id, adjustment_type, quantity, previous_quantity, new_quantity, reason, created_by
+    product_id, adjustment_type, quantity, previous_quantity, new_quantity, reason, created_by, user_id
   )
-  VALUES (p_product_id, p_adjustment_type, v_abs_qty, v_current_qty, v_new_qty, p_reason, p_user_id);
+  VALUES (p_product_id, p_adjustment_type, v_abs_qty, v_current_qty, v_new_qty, p_reason, p_user_id, p_user_id);
 
   -- Audit log
   INSERT INTO audit_logs (user_id, action, module, record_id, description)
@@ -476,7 +519,7 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- ─────────────────────────────────────────────────
--- ROW LEVEL SECURITY
+-- ROW LEVEL SECURITY (Per-User Data Isolation)
 -- ─────────────────────────────────────────────────
 
 -- Enable RLS on all tables
@@ -495,107 +538,45 @@ ALTER TABLE payments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
 
--- Helper function to get current user role
-CREATE OR REPLACE FUNCTION get_user_role()
-RETURNS TEXT AS $$
-  SELECT role FROM profiles WHERE id = auth.uid()
-$$ LANGUAGE SQL STABLE SECURITY DEFINER;
+-- ─── STRICT PER-USER RLS POLICIES ───
+CREATE POLICY "Users can manage own profile" ON profiles
+  FOR ALL USING (id = auth.uid()) WITH CHECK (id = auth.uid());
 
--- ─── PROFILES policies ───
-CREATE POLICY "Users can view all profiles" ON profiles FOR SELECT USING (auth.role() = 'authenticated');
-CREATE POLICY "Users can update own profile" ON profiles FOR UPDATE USING (id = auth.uid());
-CREATE POLICY "Admins can update all profiles" ON profiles FOR UPDATE USING (get_user_role() = 'admin');
+CREATE POLICY "Users can manage own categories" ON categories
+  FOR ALL USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
 
--- ─── CATEGORIES policies ───
-CREATE POLICY "All authenticated can view categories" ON categories FOR SELECT USING (auth.role() = 'authenticated');
-CREATE POLICY "Managers+ can insert categories" ON categories FOR INSERT WITH CHECK (get_user_role() IN ('admin', 'manager'));
-CREATE POLICY "Managers+ can update categories" ON categories FOR UPDATE USING (get_user_role() IN ('admin', 'manager'));
-CREATE POLICY "Admins can delete categories" ON categories FOR DELETE USING (get_user_role() IN ('admin', 'manager'));
+CREATE POLICY "Users can manage own suppliers" ON suppliers
+  FOR ALL USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
 
--- ─── SUPPLIERS policies ───
-CREATE POLICY "All authenticated can view suppliers" ON suppliers FOR SELECT USING (auth.role() = 'authenticated');
-CREATE POLICY "Managers+ can manage suppliers" ON suppliers FOR INSERT WITH CHECK (get_user_role() IN ('admin', 'manager'));
-CREATE POLICY "Managers+ can update suppliers" ON suppliers FOR UPDATE USING (get_user_role() IN ('admin', 'manager'));
-CREATE POLICY "Admins can delete suppliers" ON suppliers FOR DELETE USING (get_user_role() IN ('admin', 'manager'));
+CREATE POLICY "Users can manage own customers" ON customers
+  FOR ALL USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
 
--- ─── CUSTOMERS policies ───
-CREATE POLICY "All authenticated can view customers" ON customers FOR SELECT USING (auth.role() = 'authenticated');
-CREATE POLICY "Staff+ can manage customers" ON customers FOR INSERT WITH CHECK (get_user_role() IN ('admin', 'manager', 'staff'));
-CREATE POLICY "Staff+ can update customers" ON customers FOR UPDATE USING (get_user_role() IN ('admin', 'manager', 'staff'));
-CREATE POLICY "Managers+ can delete customers" ON customers FOR DELETE USING (get_user_role() IN ('admin', 'manager'));
+CREATE POLICY "Users can manage own products" ON products
+  FOR ALL USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
 
--- ─── PRODUCTS policies ───
-CREATE POLICY "All authenticated can view products" ON products FOR SELECT USING (auth.role() = 'authenticated');
-CREATE POLICY "Managers+ can create products" ON products FOR INSERT WITH CHECK (get_user_role() IN ('admin', 'manager'));
-CREATE POLICY "Managers+ can update products" ON products FOR UPDATE USING (get_user_role() IN ('admin', 'manager'));
-CREATE POLICY "Admins can delete products" ON products FOR DELETE USING (get_user_role() IN ('admin', 'manager'));
+CREATE POLICY "Users can manage own inventory" ON inventory
+  FOR ALL USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
 
--- ─── INVENTORY policies ───
-CREATE POLICY "All authenticated can view inventory" ON inventory FOR SELECT USING (auth.role() = 'authenticated');
-CREATE POLICY "System can manage inventory" ON inventory FOR ALL USING (auth.role() = 'authenticated');
+CREATE POLICY "Users can manage own purchases" ON purchases
+  FOR ALL USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
 
--- ─── PURCHASES policies ───
-CREATE POLICY "Managers+ can view purchases" ON purchases FOR SELECT USING (get_user_role() IN ('admin', 'manager'));
-CREATE POLICY "Managers+ can create purchases" ON purchases FOR INSERT WITH CHECK (get_user_role() IN ('admin', 'manager'));
-CREATE POLICY "Managers+ can update purchases" ON purchases FOR UPDATE USING (get_user_role() IN ('admin', 'manager'));
+CREATE POLICY "Users can manage own purchase items" ON purchase_items
+  FOR ALL USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
 
--- ─── PURCHASE ITEMS policies ───
-CREATE POLICY "Managers+ can view purchase items" ON purchase_items FOR SELECT USING (get_user_role() IN ('admin', 'manager'));
-CREATE POLICY "System can manage purchase items" ON purchase_items FOR ALL USING (auth.role() = 'authenticated');
+CREATE POLICY "Users can manage own sales" ON sales
+  FOR ALL USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
 
--- ─── SALES policies ───
-CREATE POLICY "Staff+ can view sales" ON sales FOR SELECT USING (get_user_role() IN ('admin', 'manager', 'staff'));
-CREATE POLICY "Staff+ can create sales" ON sales FOR INSERT WITH CHECK (get_user_role() IN ('admin', 'manager', 'staff'));
-CREATE POLICY "Managers+ can update sales" ON sales FOR UPDATE USING (get_user_role() IN ('admin', 'manager'));
+CREATE POLICY "Users can manage own sale items" ON sale_items
+  FOR ALL USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
 
--- ─── SALE ITEMS policies ───
-CREATE POLICY "Staff+ can view sale items" ON sale_items FOR SELECT USING (get_user_role() IN ('admin', 'manager', 'staff'));
-CREATE POLICY "System can manage sale items" ON sale_items FOR ALL USING (auth.role() = 'authenticated');
+CREATE POLICY "Users can manage own stock adjustments" ON stock_adjustments
+  FOR ALL USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
 
--- ─── STOCK ADJUSTMENTS policies ───
-CREATE POLICY "Managers+ can view adjustments" ON stock_adjustments FOR SELECT USING (get_user_role() IN ('admin', 'manager', 'staff'));
-CREATE POLICY "Managers+ can create adjustments" ON stock_adjustments FOR INSERT WITH CHECK (get_user_role() IN ('admin', 'manager'));
+CREATE POLICY "Users can manage own payments" ON payments
+  FOR ALL USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
 
--- ─── PAYMENTS policies ───
-CREATE POLICY "Managers+ can view payments" ON payments FOR SELECT USING (get_user_role() IN ('admin', 'manager'));
-CREATE POLICY "System can manage payments" ON payments FOR ALL USING (auth.role() = 'authenticated');
+CREATE POLICY "Users can manage own audit logs" ON audit_logs
+  FOR ALL USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
 
--- ─── AUDIT LOGS policies ───
-CREATE POLICY "Admins can view audit logs" ON audit_logs FOR SELECT USING (get_user_role() = 'admin');
-CREATE POLICY "System can create audit logs" ON audit_logs FOR INSERT WITH CHECK (auth.role() = 'authenticated');
-
--- ─── NOTIFICATIONS policies ───
-CREATE POLICY "Users can view own notifications" ON notifications FOR SELECT USING (user_id = auth.uid());
-CREATE POLICY "Users can update own notifications" ON notifications FOR UPDATE USING (user_id = auth.uid());
-CREATE POLICY "System can create notifications" ON notifications FOR INSERT WITH CHECK (auth.role() = 'authenticated');
-
--- ─────────────────────────────────────────────────
--- OPTIONAL SEED DATA (Development only)
--- Uncomment to insert sample data
--- ─────────────────────────────────────────────────
-
-/*
--- Sample categories
-INSERT INTO categories (name, description, status) VALUES
-  ('Electronics', 'Electronic devices and accessories', 'active'),
-  ('Clothing', 'Apparel and fashion', 'active'),
-  ('Food & Beverage', 'Food products and drinks', 'active'),
-  ('Office Supplies', 'Stationery and office equipment', 'active'),
-  ('Hardware', 'Tools and hardware items', 'active');
-
--- Sample suppliers
-INSERT INTO suppliers (name, company_name, phone, email, status) VALUES
-  ('Rajesh Kumar', 'TechSupply Co', '+91 9876543210', 'rajesh@techsupply.com', 'active'),
-  ('Priya Sharma', 'Fashion Hub', '+91 9876543211', 'priya@fashionhub.com', 'active'),
-  ('Amit Singh', 'Food Distributors', '+91 9876543212', 'amit@fooddist.com', 'active'),
-  ('Meena Patel', 'Office Pro', '+91 9876543213', 'meena@officepro.com', 'active'),
-  ('Vikram Nair', 'Hardware World', '+91 9876543214', 'vikram@hwworld.com', 'active');
-
--- Sample customers
-INSERT INTO customers (name, phone, email, status) VALUES
-  ('Arun Sharma', '+91 9876543220', 'arun@example.com', 'active'),
-  ('Sunita Verma', '+91 9876543221', 'sunita@example.com', 'active'),
-  ('Rahul Gupta', '+91 9876543222', 'rahul@example.com', 'active'),
-  ('Anita Patel', '+91 9876543223', 'anita@example.com', 'active'),
-  ('Ravi Kumar', '+91 9876543224', 'ravi@example.com', 'active');
-*/
+CREATE POLICY "Users can manage own notifications" ON notifications
+  FOR ALL USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());

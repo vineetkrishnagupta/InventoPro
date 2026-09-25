@@ -46,14 +46,18 @@ export const productService = {
   },
 
   async create(product) {
+    const { data: { user } } = await supabase.auth.getUser()
+    const payload = user?.id ? { ...product, user_id: user.id } : product
     const { data, error } = await supabase
       .from('products')
-      .insert(product)
+      .insert(payload)
       .select()
       .single()
     if (error) handleError(error)
     // Initialize inventory
-    await supabase.from('inventory').insert({ product_id: data.id, quantity: 0, reserved_quantity: 0 })
+    const invPayload = { product_id: data.id, quantity: 0, reserved_quantity: 0 }
+    if (user?.id) invPayload.user_id = user.id
+    await supabase.from('inventory').insert(invPayload)
     return data
   },
 
@@ -104,7 +108,9 @@ export const categoryService = {
   },
 
   async create(category) {
-    const { data, error } = await supabase.from('categories').insert(category).select().single()
+    const { data: { user } } = await supabase.auth.getUser()
+    const payload = user?.id ? { ...category, user_id: user.id } : category
+    const { data, error } = await supabase.from('categories').insert(payload).select().single()
     if (error) handleError(error)
     return data
   },
@@ -146,7 +152,9 @@ export const supplierService = {
   },
 
   async create(supplier) {
-    const { data, error } = await supabase.from('suppliers').insert(supplier).select().single()
+    const { data: { user } } = await supabase.auth.getUser()
+    const payload = user?.id ? { ...supplier, user_id: user.id } : supplier
+    const { data, error } = await supabase.from('suppliers').insert(payload).select().single()
     if (error) handleError(error)
     return data
   },
@@ -184,7 +192,9 @@ export const customerService = {
   },
 
   async create(customer) {
-    const { data, error } = await supabase.from('customers').insert(customer).select().single()
+    const { data: { user } } = await supabase.auth.getUser()
+    const payload = user?.id ? { ...customer, user_id: user.id } : customer
+    const { data, error } = await supabase.from('customers').insert(payload).select().single()
     if (error) handleError(error)
     return data
   },
@@ -233,10 +243,13 @@ export const purchaseService = {
   },
 
   async create(purchase, items) {
+    const { data: { user } } = await supabase.auth.getUser()
+    const purchaseData = { ...purchase, user_id: user?.id, created_by: user?.id }
+    const itemsData = (items || []).map(item => ({ ...item, user_id: user?.id }))
     // Use RPC for atomic operation
     const { data, error } = await supabase.rpc('create_purchase', {
-      purchase_data: purchase,
-      items_data: items,
+      purchase_data: purchaseData,
+      items_data: itemsData,
     })
     if (error) handleError(error)
     return data
@@ -281,9 +294,12 @@ export const salesService = {
   },
 
   async create(sale, items) {
+    const { data: { user } } = await supabase.auth.getUser()
+    const saleData = { ...sale, user_id: user?.id, created_by: user?.id }
+    const itemsData = (items || []).map(item => ({ ...item, user_id: user?.id }))
     const { data, error } = await supabase.rpc('create_sale', {
-      sale_data: sale,
-      items_data: items,
+      sale_data: saleData,
+      items_data: itemsData,
     })
     if (error) {
       if (error.message?.includes('Insufficient stock')) throw new Error(error.message)
