@@ -1,0 +1,241 @@
+import { useState } from 'react'
+import { Settings, Building2, Palette, Save, User } from 'lucide-react'
+import { useAuth } from '../../context/AuthContext'
+import { useTheme } from '../../context/ThemeContext'
+import Button from '../../components/common/Button'
+import Input from '../../components/common/Input'
+import Select from '../../components/common/Select'
+import Breadcrumb from '../../components/common/Breadcrumb'
+import toast from 'react-hot-toast'
+import { supabase } from '../../lib/supabase'
+import clsx from 'clsx'
+
+const TABS = [
+  { id: 'profile', label: 'My Profile', icon: User },
+  { id: 'business', label: 'Business', icon: Building2 },
+  { id: 'app', label: 'Application', icon: Palette },
+]
+
+export default function SettingsPage() {
+  const { user, profile, updateProfile } = useAuth()
+  const { isDark, toggleTheme } = useTheme()
+  const [activeTab, setActiveTab] = useState('profile')
+  const [saving, setSaving] = useState(false)
+
+  // Profile form
+  const [profileForm, setProfileForm] = useState({
+    full_name: profile?.full_name || '',
+    phone: profile?.phone || '',
+  })
+  const [profileErrors, setProfileErrors] = useState({})
+
+  // Password form
+  const [passwordForm, setPasswordForm] = useState({ newPassword: '', confirmPassword: '' })
+  const [pwdErrors, setPwdErrors] = useState({})
+  const [changingPwd, setChangingPwd] = useState(false)
+
+  // Business settings (stored in localStorage for demo)
+  const [businessForm, setBizForm] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('ims_business_settings') || '{}') }
+    catch { return {} }
+  })
+
+  // App settings
+  const [appForm, setAppForm] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('ims_app_settings') || '{"lowStockThreshold": 5, "currency": "INR", "dateFormat": "dd MMM yyyy"}') }
+    catch { return { lowStockThreshold: 5, currency: 'INR', dateFormat: 'dd MMM yyyy' } }
+  })
+
+  const handleProfileSave = async () => {
+    if (!profileForm.full_name?.trim()) { setProfileErrors({ full_name: 'Name is required' }); return }
+    setSaving(true)
+    try {
+      await updateProfile(profileForm)
+      toast.success('Profile updated')
+    } catch (err) { toast.error(err.message) }
+    finally { setSaving(false) }
+  }
+
+  const handlePasswordChange = async () => {
+    const errs = {}
+    if (!passwordForm.newPassword || passwordForm.newPassword.length < 8) errs.newPassword = 'Min 8 characters'
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) errs.confirmPassword = 'Passwords do not match'
+    if (Object.keys(errs).length > 0) { setPwdErrors(errs); return }
+    setChangingPwd(true)
+    try {
+      const { error } = await supabase.auth.updateUser({ password: passwordForm.newPassword })
+      if (error) throw error
+      toast.success('Password changed')
+      setPasswordForm({ newPassword: '', confirmPassword: '' })
+      setPwdErrors({})
+    } catch (err) { toast.error(err.message) }
+    finally { setChangingPwd(false) }
+  }
+
+  const handleBizSave = () => {
+    localStorage.setItem('ims_business_settings', JSON.stringify(businessForm))
+    toast.success('Business settings saved')
+  }
+
+  const handleAppSave = () => {
+    localStorage.setItem('ims_app_settings', JSON.stringify(appForm))
+    toast.success('Application settings saved')
+  }
+
+  return (
+    <div className="space-y-6 animate-fade-in">
+      <Breadcrumb items={[{ label: 'Settings' }]} />
+      <div className="page-header">
+        <h1 className="page-title">Settings</h1>
+      </div>
+
+      <div className="flex gap-6 flex-col lg:flex-row">
+        {/* Sidebar tabs */}
+        <div className="lg:w-48 flex-shrink-0">
+          <nav className="space-y-1">
+            {TABS.map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={clsx(
+                  'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all text-left',
+                  activeTab === tab.id
+                    ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300'
+                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white'
+                )}
+              >
+                <tab.icon className="w-4 h-4" />
+                {tab.label}
+              </button>
+            ))}
+          </nav>
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 space-y-6">
+          {activeTab === 'profile' && (
+            <>
+              <div className="card p-6">
+                <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-4">Profile Information</h2>
+                <div className="space-y-4">
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="w-16 h-16 rounded-full bg-primary-600 flex items-center justify-center flex-shrink-0">
+                      <span className="text-white text-2xl font-semibold">
+                        {profile?.full_name?.charAt(0)?.toUpperCase() || 'U'}
+                      </span>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-900 dark:text-white">{profile?.full_name || 'User'}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">{user?.email}</p>
+                      <span className="text-xs bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 px-2 py-0.5 rounded-full capitalize">{profile?.role}</span>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Input label="Full Name" value={profileForm.full_name}
+                      onChange={(e) => { setProfileForm({ ...profileForm, full_name: e.target.value }); setProfileErrors({}) }}
+                      error={profileErrors.full_name} required />
+                    <Input label="Phone" value={profileForm.phone}
+                      onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })} />
+                    <div className="form-group">
+                      <label className="label">Email Address</label>
+                      <input className="input bg-gray-50 dark:bg-gray-800 cursor-not-allowed" value={user?.email} disabled />
+                      <p className="text-xs text-gray-400 mt-1">Email cannot be changed here.</p>
+                    </div>
+                  </div>
+                  <div className="flex justify-end">
+                    <Button variant="primary" icon={Save} onClick={handleProfileSave} loading={saving}>Save Profile</Button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="card p-6">
+                <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-4">Change Password</h2>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Input label="New Password" type="password" placeholder="Min 8 characters" value={passwordForm.newPassword}
+                      onChange={(e) => { setPasswordForm({ ...passwordForm, newPassword: e.target.value }); setPwdErrors({}) }}
+                      error={pwdErrors.newPassword} />
+                    <Input label="Confirm Password" type="password" placeholder="Re-enter password" value={passwordForm.confirmPassword}
+                      onChange={(e) => { setPasswordForm({ ...passwordForm, confirmPassword: e.target.value }); setPwdErrors({}) }}
+                      error={pwdErrors.confirmPassword} />
+                  </div>
+                  <div className="flex justify-end">
+                    <Button variant="secondary" onClick={handlePasswordChange} loading={changingPwd}>Change Password</Button>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+
+          {activeTab === 'business' && (
+            <div className="card p-6">
+              <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-4">Business Information</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Input label="Business Name" placeholder="Your Business Name" value={businessForm.name || ''}
+                  onChange={(e) => setBizForm({ ...businessForm, name: e.target.value })} />
+                <Input label="Phone" placeholder="+91 9876543210" value={businessForm.phone || ''}
+                  onChange={(e) => setBizForm({ ...businessForm, phone: e.target.value })} />
+                <Input label="Email" type="email" placeholder="business@example.com" value={businessForm.email || ''}
+                  onChange={(e) => setBizForm({ ...businessForm, email: e.target.value })} />
+                <Input label="GST Number" placeholder="GSTIN" value={businessForm.gst || ''}
+                  onChange={(e) => setBizForm({ ...businessForm, gst: e.target.value })} />
+                <div className="form-group md:col-span-2">
+                  <label className="label">Address</label>
+                  <textarea value={businessForm.address || ''} onChange={(e) => setBizForm({ ...businessForm, address: e.target.value })}
+                    placeholder="Full business address..." rows={3} className="input resize-none" />
+                </div>
+              </div>
+              <div className="flex justify-end mt-4">
+                <Button variant="primary" icon={Save} onClick={handleBizSave}>Save Business Settings</Button>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'app' && (
+            <div className="card p-6">
+              <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-4">Application Settings</h2>
+              <div className="space-y-5">
+                <div className="flex items-center justify-between py-3 border-b border-gray-100 dark:border-gray-800">
+                  <div>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">Dark Mode</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Toggle between light and dark theme</p>
+                  </div>
+                  <button
+                    onClick={toggleTheme}
+                    className={clsx(
+                      'relative inline-flex h-6 w-11 items-center rounded-full transition-colors',
+                      isDark ? 'bg-primary-600' : 'bg-gray-200 dark:bg-gray-700'
+                    )}
+                  >
+                    <span className={clsx('inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform', isDark ? 'translate-x-6' : 'translate-x-1')} />
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Input label="Low Stock Threshold" type="number" min="1" value={appForm.lowStockThreshold || 5}
+                    onChange={(e) => setAppForm({ ...appForm, lowStockThreshold: e.target.value })}
+                    hint="Alert when stock falls below this quantity" />
+                  <Select label="Currency" value={appForm.currency || 'INR'}
+                    options={[{ value: 'INR', label: 'INR (₹)' }, { value: 'USD', label: 'USD ($)' }, { value: 'EUR', label: 'EUR (€)' }]}
+                    onChange={(e) => setAppForm({ ...appForm, currency: e.target.value })} placeholder="" />
+                  <Select label="Date Format" value={appForm.dateFormat || 'dd MMM yyyy'}
+                    options={[
+                      { value: 'dd MMM yyyy', label: 'DD Mon YYYY (25 Sep 2026)' },
+                      { value: 'MM/dd/yyyy', label: 'MM/DD/YYYY (09/25/2026)' },
+                      { value: 'dd/MM/yyyy', label: 'DD/MM/YYYY (25/09/2026)' },
+                      { value: 'yyyy-MM-dd', label: 'YYYY-MM-DD (2026-09-25)' },
+                    ]}
+                    onChange={(e) => setAppForm({ ...appForm, dateFormat: e.target.value })} placeholder="" />
+                </div>
+
+                <div className="flex justify-end">
+                  <Button variant="primary" icon={Save} onClick={handleAppSave}>Save App Settings</Button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
