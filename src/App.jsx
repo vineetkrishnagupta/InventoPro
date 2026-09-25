@@ -11,6 +11,9 @@ import Signup from './pages/auth/Signup'
 import ForgotPassword from './pages/auth/ForgotPassword'
 import ResetPassword from './pages/auth/ResetPassword'
 
+// Public pages
+import Blog from './pages/blog/Blog'
+
 // Admin pages
 import Dashboard from './pages/dashboard/Dashboard'
 import Products from './pages/products/Products'
@@ -59,6 +62,7 @@ export default function App() {
             <Route path="/signup" element={<Signup />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/blog" element={<Blog />} />
 
             {/* Protected admin routes */}
             <Route element={<ProtectedRoute />}>
