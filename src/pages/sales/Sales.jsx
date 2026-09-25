@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Plus, Eye, DollarSign, Trash2, Search, ShoppingBag } from 'lucide-react'
+import { Plus, Eye, DollarSign, Trash2, Search, ShoppingBag, Printer } from 'lucide-react'
 import { salesService, customerService, productService } from '../../services'
 import { useAuth } from '../../context/AuthContext'
 import Button from '../../components/common/Button'
@@ -316,9 +316,16 @@ export default function Sales() {
       </Modal>
 
       {/* View Sale Modal */}
-      <Modal isOpen={viewModal.open} onClose={() => setViewModal({ open: false, sale: null })} title="Sale Details" size="xl">
+      <Modal isOpen={viewModal.open} onClose={() => setViewModal({ open: false, sale: null })} title="Sale Details" size="xl"
+        footer={
+          <div className="flex justify-end gap-3 no-print">
+            <Button variant="secondary" onClick={() => setViewModal({ open: false, sale: null })}>Close</Button>
+            <Button variant="primary" icon={Printer} onClick={() => window.print()}>Print PDF</Button>
+          </div>
+        }
+      >
         {viewModal.sale && (
-          <div className="p-6 space-y-4">
+          <div className="p-6 space-y-4 printable-area">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
               {[['Invoice', viewModal.sale.invoice_number], ['Customer', viewModal.sale.customers?.name || 'Walk-in'],
                 ['Date', formatDate(viewModal.sale.sale_date)], ['Status', viewModal.sale.payment_status]].map(([k, v]) => (

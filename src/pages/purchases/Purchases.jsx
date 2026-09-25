@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Plus, Eye, ShoppingCart, Trash2, Search } from 'lucide-react'
+import { Plus, Eye, ShoppingCart, Trash2, Search, Printer } from 'lucide-react'
 import { purchaseService, supplierService, productService } from '../../services'
 import { useAuth } from '../../context/AuthContext'
 import Button from '../../components/common/Button'
@@ -325,9 +325,16 @@ export default function Purchases() {
       </Modal>
 
       {/* View Modal */}
-      <Modal isOpen={viewModal.open} onClose={() => setViewModal({ open: false, purchase: null })} title="Purchase Order Details" size="xl">
+      <Modal isOpen={viewModal.open} onClose={() => setViewModal({ open: false, purchase: null })} title="Purchase Order Details" size="xl"
+        footer={
+          <div className="flex justify-end gap-3 no-print">
+            <Button variant="secondary" onClick={() => setViewModal({ open: false, purchase: null })}>Close</Button>
+            <Button variant="primary" icon={Printer} onClick={() => window.print()}>Print PDF</Button>
+          </div>
+        }
+      >
         {viewModal.purchase && (
-          <div className="p-6 space-y-4">
+          <div className="p-6 space-y-4 printable-area">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
               {[
                 ['Purchase #', viewModal.purchase.purchase_number],
