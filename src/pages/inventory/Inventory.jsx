@@ -11,7 +11,7 @@ import Button from '../../components/common/Button'
 import toast from 'react-hot-toast'
 import { formatCurrency, getStockStatus, exportToCSV } from '../../utils'
 import clsx from 'clsx'
-// 
+
 const PAGE_SIZE = 20
 
 export default function Inventory() {
