@@ -53,7 +53,7 @@ export default function Purchases() {
   useEffect(() => { load() }, [load])
 
   useEffect(() => {
-    supplierService.getAll().then(setSuppliers).catch(() => {})
+    supplierService.getAll().then(setSuppliers).catch(() => { })
   }, [])
 
   // Product search
@@ -159,11 +159,13 @@ export default function Purchases() {
     { key: 'total_amount', label: 'Total', render: (v) => <span className="font-semibold">{formatCurrency(v)}</span> },
     { key: 'payment_status', label: 'Status', render: (v) => <Badge variant={paymentStatusVariant(v)} className="capitalize">{v}</Badge> },
     { key: 'payment_method', label: 'Method', render: (v) => <span className="capitalize">{v || '—'}</span> },
-    { key: 'actions', label: '', cellClassName: 'text-right', render: (_, row) => (
-      <button onClick={() => viewPurchase(row.id)} className="p-1.5 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors">
-        <Eye className="w-4 h-4" />
-      </button>
-    )},
+    {
+      key: 'actions', label: '', cellClassName: 'text-right', render: (_, row) => (
+        <button onClick={() => viewPurchase(row.id)} className="p-1.5 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors">
+          <Eye className="w-4 h-4" />
+        </button>
+      )
+    },
   ]
 
   return (
@@ -323,7 +325,7 @@ export default function Purchases() {
           </div>
         </div>
       </Modal>
-
+      {/* ss */}
       {/* View Modal */}
       <Modal isOpen={viewModal.open} onClose={() => setViewModal({ open: false, purchase: null })} title="Purchase Order Details" size="xl"
         footer={
