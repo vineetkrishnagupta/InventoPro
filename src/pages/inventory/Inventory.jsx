@@ -11,7 +11,7 @@ import Button from '../../components/common/Button'
 import toast from 'react-hot-toast'
 import { formatCurrency, getStockStatus, exportToCSV } from '../../utils'
 import clsx from 'clsx'
-
+// 
 const PAGE_SIZE = 20
 
 export default function Inventory() {
@@ -45,7 +45,7 @@ export default function Inventory() {
   }, [search, categoryFilter, stockFilter, page])
 
   useEffect(() => { load() }, [load])
-  useEffect(() => { categoryService.getAll().then(setCategories).catch(() => {}) }, [])
+  useEffect(() => { categoryService.getAll().then(setCategories).catch(() => { }) }, [])
 
   const handleExport = () => {
     exportToCSV(inventory.map(p => ({
@@ -61,41 +61,49 @@ export default function Inventory() {
   const categoryOptions = categories.map(c => ({ value: c.id, label: c.name }))
 
   const columns = [
-    { key: 'name', label: 'Product', render: (v, row) => (
-      <div>
-        <p className="font-medium text-gray-900 dark:text-white">{v}</p>
-        <p className="text-xs text-gray-500 dark:text-gray-400">{row.sku}</p>
-      </div>
-    )},
-    { key: 'categories', label: 'Category', render: (v) => v?.name || '—' },
-    { key: 'quantity', label: 'Current Stock', render: (_, row) => {
-      const qty = row.inventory?.[0]?.quantity || 0
-      const status = getStockStatus(qty, row.minimum_stock)
-      return (
-        <div className="flex items-center gap-2">
-          <span className={clsx('font-semibold text-base', status.variant === 'red' ? 'text-red-600' : status.variant === 'yellow' ? 'text-yellow-600' : 'text-gray-900 dark:text-white')}>
-            {qty}
-          </span>
+    {
+      key: 'name', label: 'Product', render: (v, row) => (
+        <div>
+          <p className="font-medium text-gray-900 dark:text-white">{v}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400">{row.sku}</p>
         </div>
       )
-    }},
+    },
+    { key: 'categories', label: 'Category', render: (v) => v?.name || '—' },
+    {
+      key: 'quantity', label: 'Current Stock', render: (_, row) => {
+        const qty = row.inventory?.[0]?.quantity || 0
+        const status = getStockStatus(qty, row.minimum_stock)
+        return (
+          <div className="flex items-center gap-2">
+            <span className={clsx('font-semibold text-base', status.variant === 'red' ? 'text-red-600' : status.variant === 'yellow' ? 'text-yellow-600' : 'text-gray-900 dark:text-white')}>
+              {qty}
+            </span>
+          </div>
+        )
+      }
+    },
     { key: 'minimum_stock', label: 'Min Stock', render: (v) => <span className="text-gray-500 dark:text-gray-400">{v}</span> },
     { key: 'purchase_price', label: 'Purchase Price', render: (v) => formatCurrency(v) },
     { key: 'selling_price', label: 'Selling Price', render: (v) => formatCurrency(v) },
-    { key: 'stock_value', label: 'Stock Value', render: (_, row) => {
-      const qty = row.inventory?.[0]?.quantity || 0
-      return <span className="font-medium">{formatCurrency(qty * row.purchase_price)}</span>
-    }},
-    { key: 'stock_status', label: 'Status', render: (_, row) => {
-      const qty = row.inventory?.[0]?.quantity || 0
-      const status = getStockStatus(qty, row.minimum_stock)
-      return (
-        <div className="flex items-center gap-1.5">
-          {status.variant === 'yellow' && <AlertTriangle className="w-3.5 h-3.5 text-yellow-500" />}
-          <Badge variant={status.variant}>{status.label}</Badge>
-        </div>
-      )
-    }},
+    {
+      key: 'stock_value', label: 'Stock Value', render: (_, row) => {
+        const qty = row.inventory?.[0]?.quantity || 0
+        return <span className="font-medium">{formatCurrency(qty * row.purchase_price)}</span>
+      }
+    },
+    {
+      key: 'stock_status', label: 'Status', render: (_, row) => {
+        const qty = row.inventory?.[0]?.quantity || 0
+        const status = getStockStatus(qty, row.minimum_stock)
+        return (
+          <div className="flex items-center gap-1.5">
+            {status.variant === 'yellow' && <AlertTriangle className="w-3.5 h-3.5 text-yellow-500" />}
+            <Badge variant={status.variant}>{status.label}</Badge>
+          </div>
+        )
+      }
+    },
   ]
 
   return (
