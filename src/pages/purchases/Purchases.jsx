@@ -325,7 +325,7 @@ export default function Purchases() {
           </div>
         </div>
       </Modal>
-      {/* ss */}
+
       {/* View Modal */}
       <Modal isOpen={viewModal.open} onClose={() => setViewModal({ open: false, purchase: null })} title="Purchase Order Details" size="xl"
         footer={
