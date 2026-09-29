@@ -190,15 +190,11 @@
 
   /* Modal backdrop */
   .modal-backdrop {
-    @apply fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 animate-fade-in;
+    @apply fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in;
   }
 
   .modal-content {
-    @apply bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full animate-slide-down;
-    overflow: hidden;
-    transform: translateZ(0);
-    will-change: transform;
-    -webkit-transform: translateZ(0);
+    @apply bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full animate-slide-down overflow-hidden;
   }
 
   /* Form group */
