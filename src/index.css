@@ -194,7 +194,8 @@
   }
 
   .modal-content {
-    @apply bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full animate-slide-down overflow-hidden;
+    @apply bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full animate-slide-down isolate;
+    overflow: clip;
   }
 
   /* Form group */
