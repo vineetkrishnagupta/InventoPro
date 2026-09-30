@@ -11,7 +11,7 @@ import Breadcrumb from '../../components/common/Breadcrumb'
 import { DataTable } from '../../components/common/DataTable'
 import Badge from '../../components/common/Badge'
 import toast from 'react-hot-toast'
-import { formatDate, formatDateTime } from '../../utils'
+import { formatDate, formatDateTime, getProductStock } from '../../utils'
 import clsx from 'clsx'
 
 const PAGE_SIZE = 15
@@ -74,7 +74,7 @@ export default function StockAdjustments() {
     setSelectedProduct(product || null)
   }
 
-  const currentStock = selectedProduct?.inventory?.[0]?.quantity || 0
+  const currentStock = getProductStock(selectedProduct)
 
   const validate = () => {
     const errs = {}
@@ -105,7 +105,7 @@ export default function StockAdjustments() {
 
   const productOptions = products.map(p => ({
     value: p.id,
-    label: `${p.name} (Stock: ${p.inventory?.[0]?.quantity || 0} ${p.unit})`,
+    label: `${p.name} (Stock: ${getProductStock(p)} ${p.unit || ''})`,
   }))
 
   const newStock = form.quantity

@@ -9,7 +9,7 @@ import Breadcrumb from '../../components/common/Breadcrumb'
 import { DataTable } from '../../components/common/DataTable'
 import Button from '../../components/common/Button'
 import toast from 'react-hot-toast'
-import { formatCurrency, getStockStatus, exportToCSV } from '../../utils'
+import { formatCurrency, getStockStatus, getProductStock, exportToCSV } from '../../utils'
 import clsx from 'clsx'
 
 const PAGE_SIZE = 20
@@ -36,9 +36,9 @@ export default function Inventory() {
 
       // Summary
       const { data: allData } = await inventoryService.getAll({ pageSize: 9999 })
-      const low = allData.filter(p => { const q = p.inventory?.[0]?.quantity || 0; return q > 0 && q <= p.minimum_stock }).length
-      const out = allData.filter(p => (p.inventory?.[0]?.quantity || 0) === 0).length
-      const value = allData.reduce((s, p) => s + (p.inventory?.[0]?.quantity || 0) * (p.purchase_price || 0), 0)
+      const low = allData.filter(p => { const q = getProductStock(p); return q > 0 && q <= p.minimum_stock }).length
+      const out = allData.filter(p => getProductStock(p) === 0).length
+      const value = allData.reduce((s, p) => s + getProductStock(p) * (p.purchase_price || 0), 0)
       setSummary({ total: allData.length, low, out, value })
     } catch (err) { toast.error(err.message) }
     finally { setLoading(false) }
@@ -50,10 +50,10 @@ export default function Inventory() {
   const handleExport = () => {
     exportToCSV(inventory.map(p => ({
       Product: p.name, SKU: p.sku, Category: p.categories?.name || '',
-      'Current Stock': p.inventory?.[0]?.quantity || 0, 'Min Stock': p.minimum_stock,
+      'Current Stock': getProductStock(p), 'Min Stock': p.minimum_stock,
       'Purchase Price': p.purchase_price, 'Selling Price': p.selling_price,
-      'Stock Value': (p.inventory?.[0]?.quantity || 0) * p.purchase_price,
-      Status: getStockStatus(p.inventory?.[0]?.quantity || 0, p.minimum_stock).label,
+      'Stock Value': getProductStock(p) * p.purchase_price,
+      Status: getStockStatus(getProductStock(p), p.minimum_stock).label,
     })), 'stock_report')
     toast.success('Stock report exported')
   }
@@ -72,7 +72,7 @@ export default function Inventory() {
     { key: 'categories', label: 'Category', render: (v) => v?.name || '—' },
     {
       key: 'quantity', label: 'Current Stock', render: (_, row) => {
-        const qty = row.inventory?.[0]?.quantity || 0
+        const qty = getProductStock(row)
         const status = getStockStatus(qty, row.minimum_stock)
         return (
           <div className="flex items-center gap-2">
@@ -88,13 +88,13 @@ export default function Inventory() {
     { key: 'selling_price', label: 'Selling Price', render: (v) => formatCurrency(v) },
     {
       key: 'stock_value', label: 'Stock Value', render: (_, row) => {
-        const qty = row.inventory?.[0]?.quantity || 0
+        const qty = getProductStock(row)
         return <span className="font-medium">{formatCurrency(qty * row.purchase_price)}</span>
       }
     },
     {
       key: 'stock_status', label: 'Status', render: (_, row) => {
-        const qty = row.inventory?.[0]?.quantity || 0
+        const qty = getProductStock(row)
         const status = getStockStatus(qty, row.minimum_stock)
         return (
           <div className="flex items-center gap-1.5">

@@ -57,10 +57,26 @@ export function truncate(text, length = 50) {
   return text.length > length ? text.substring(0, length) + '...' : text
 }
 
+// Get product stock safely (handles Supabase 1-to-1 object, array, or direct property)
+export function getProductStock(product) {
+  if (!product) return 0
+  if (product.inventory) {
+    if (Array.isArray(product.inventory)) {
+      return Number(product.inventory[0]?.quantity ?? 0)
+    }
+    if (typeof product.inventory === 'object') {
+      return Number(product.inventory.quantity ?? 0)
+    }
+  }
+  return Number(product.stock ?? product.current_stock ?? product.quantity ?? 0)
+}
+
 // Get stock status
 export function getStockStatus(quantity, minimumStock) {
-  if (quantity <= 0) return { label: 'Out of Stock', variant: 'red' }
-  if (quantity <= minimumStock) return { label: 'Low Stock', variant: 'yellow' }
+  const q = Number(quantity || 0)
+  const min = Number(minimumStock || 0)
+  if (q <= 0) return { label: 'Out of Stock', variant: 'red' }
+  if (q <= min) return { label: 'Low Stock', variant: 'yellow' }
   return { label: 'In Stock', variant: 'green' }
 }
 

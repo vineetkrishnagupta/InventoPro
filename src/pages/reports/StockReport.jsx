@@ -5,7 +5,7 @@ import Button from '../../components/common/Button'
 import Badge from '../../components/common/Badge'
 import Breadcrumb from '../../components/common/Breadcrumb'
 import { DataTable } from '../../components/common/DataTable'
-import { formatCurrency, getStockStatus, exportToCSV } from '../../utils'
+import { formatCurrency, getStockStatus, getProductStock, exportToCSV } from '../../utils'
 import toast from 'react-hot-toast'
 
 export default function StockReport() {
@@ -19,9 +19,9 @@ export default function StockReport() {
       try {
         const result = await reportService.getStockReport()
         setData(result)
-        const low = result.filter(p => { const q = p.inventory?.[0]?.quantity || 0; return q > 0 && q <= p.minimum_stock }).length
-        const out = result.filter(p => (p.inventory?.[0]?.quantity || 0) === 0).length
-        const value = result.reduce((s, p) => s + (p.inventory?.[0]?.quantity || 0) * p.purchase_price, 0)
+        const low = result.filter(p => { const q = getProductStock(p); return q > 0 && q <= p.minimum_stock }).length
+        const out = result.filter(p => getProductStock(p) === 0).length
+        const value = result.reduce((s, p) => s + getProductStock(p) * p.purchase_price, 0)
         setSummary({ total: result.length, low, out, value })
       } catch (err) { toast.error(err.message) }
       finally { setLoading(false) }
@@ -32,9 +32,9 @@ export default function StockReport() {
   const handleExport = () => {
     exportToCSV(data.map(p => ({
       Product: p.name, SKU: p.sku, Category: p.categories?.name || '',
-      Stock: p.inventory?.[0]?.quantity || 0, 'Min Stock': p.minimum_stock,
+      Stock: getProductStock(p), 'Min Stock': p.minimum_stock,
       'Purchase Price': p.purchase_price, 'Selling Price': p.selling_price,
-      'Stock Value': (p.inventory?.[0]?.quantity || 0) * p.purchase_price,
+      'Stock Value': getProductStock(p) * p.purchase_price,
     })), 'stock_report')
     toast.success('Stock report exported')
   }
@@ -45,18 +45,18 @@ export default function StockReport() {
     )},
     { key: 'categories', label: 'Category', render: (v) => v?.name || '—' },
     { key: 'quantity', label: 'Stock', render: (_, row) => {
-      const qty = row.inventory?.[0]?.quantity || 0
+      const qty = getProductStock(row)
       return <span className="font-semibold">{qty}</span>
     }},
     { key: 'minimum_stock', label: 'Min Stock', render: (v) => v },
     { key: 'purchase_price', label: 'Purchase Price', render: (v) => formatCurrency(v) },
     { key: 'selling_price', label: 'Selling Price', render: (v) => formatCurrency(v) },
     { key: 'stock_value', label: 'Stock Value', render: (_, row) => {
-      const qty = row.inventory?.[0]?.quantity || 0
+      const qty = getProductStock(row)
       return <span className="font-medium">{formatCurrency(qty * row.purchase_price)}</span>
     }},
     { key: 'stock_status', label: 'Status', render: (_, row) => {
-      const qty = row.inventory?.[0]?.quantity || 0
+      const qty = getProductStock(row)
       const status = getStockStatus(qty, row.minimum_stock)
       return <Badge variant={status.variant}>{status.label}</Badge>
     }},

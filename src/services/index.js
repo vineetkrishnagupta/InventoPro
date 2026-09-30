@@ -8,6 +8,26 @@ const handleError = (error) => {
   throw new Error(error?.message || 'An unexpected error occurred')
 }
 
+// Helper to normalize Supabase product inventory (which can be 1-to-1 object or 1-to-many array)
+export const normalizeProduct = (p) => {
+  if (!p) return p
+  const invObj = Array.isArray(p.inventory) ? p.inventory[0] : p.inventory
+  const qty = Number(invObj?.quantity ?? p.stock ?? p.quantity ?? 0)
+  const reserved = Number(invObj?.reserved_quantity ?? 0)
+
+  // Dual-compatible: supports p.inventory[0].quantity AND p.inventory.quantity AND p.stock
+  const normalizedInv = [{ quantity: qty, reserved_quantity: reserved }]
+  normalizedInv.quantity = qty
+  normalizedInv.reserved_quantity = reserved
+
+  return {
+    ...p,
+    inventory: normalizedInv,
+    stock: qty,
+    current_stock: qty,
+  }
+}
+
 // ─── Products ─────────────────────────────────────────────────────────────────
 
 export const productService = {
@@ -32,7 +52,7 @@ export const productService = {
 
     const { data, error, count } = await query
     if (error) handleError(error)
-    return { data: data || [], count: count || 0 }
+    return { data: (data || []).map(normalizeProduct), count: count || 0 }
   },
 
   async getById(id) {
@@ -42,7 +62,7 @@ export const productService = {
       .eq('id', id)
       .single()
     if (error) handleError(error)
-    return data
+    return normalizeProduct(data)
   },
 
   async create(product) {
@@ -58,7 +78,7 @@ export const productService = {
     const invPayload = { product_id: data.id, quantity: 0, reserved_quantity: 0 }
     if (user?.id) invPayload.user_id = user.id
     await supabase.from('inventory').insert(invPayload)
-    return data
+    return normalizeProduct(data)
   },
 
   async update(id, updates) {
@@ -69,7 +89,7 @@ export const productService = {
       .select()
       .single()
     if (error) handleError(error)
-    return data
+    return normalizeProduct(data)
   },
 
   async delete(id) {
@@ -80,14 +100,11 @@ export const productService = {
   async getLowStock() {
     const { data, error } = await supabase
       .from('products')
-      .select(`*, inventory(quantity), categories(name)`)
+      .select(`*, inventory(quantity, reserved_quantity), categories(name)`)
       .eq('status', 'active')
       .order('name')
     if (error) handleError(error)
-    return (data || []).filter(p =>
-      p.inventory?.[0]?.quantity !== undefined &&
-      p.inventory[0].quantity <= p.minimum_stock
-    )
+    return (data || []).map(normalizeProduct).filter(p => p.stock <= p.minimum_stock)
   },
 }
 
@@ -274,16 +291,23 @@ export const purchaseService = {
     for (const item of itemsData) {
       const { data: invData, error: selErr } = await supabase
         .from('inventory')
-        .select('quantity')
+        .select('id, quantity, user_id')
         .eq('product_id', item.product_id)
-        .single()
+        .maybeSingle()
         
-      if (selErr && selErr.code !== 'PGRST116') handleError(selErr) // PGRST116 is not found
+      if (selErr) handleError(selErr)
         
       if (invData) {
+        const updatePayload = { 
+          quantity: Number(invData.quantity || 0) + Number(item.quantity),
+          updated_at: new Date().toISOString()
+        }
+        if (!invData.user_id && user?.id) {
+          updatePayload.user_id = user.id
+        }
         const { error: updErr } = await supabase
           .from('inventory')
-          .update({ quantity: Number(invData.quantity) + Number(item.quantity) })
+          .update(updatePayload)
           .eq('product_id', item.product_id)
         if (updErr) handleError(updErr)
       } else {
@@ -292,7 +316,9 @@ export const purchaseService = {
           .insert({
             product_id: item.product_id,
             quantity: Number(item.quantity),
-            user_id: user?.id
+            reserved_quantity: 0,
+            user_id: user?.id,
+            updated_at: new Date().toISOString()
           })
         if (insErr) handleError(insErr)
       }
@@ -309,6 +335,17 @@ export const purchaseService = {
         created_by: user?.id,
         user_id: user?.id
       })
+    }
+
+    // 5. Audit Log
+    if (user?.id) {
+      await supabase.from('audit_logs').insert({
+        user_id: user.id,
+        action: 'CREATE_PURCHASE',
+        module: 'PURCHASES',
+        record_id: purchaseId,
+        description: `Purchase order created: ${purchaseData.purchase_number || purchaseId}`
+      }).then(() => {}).catch(() => {})
     }
     
     return purchaseId
@@ -447,16 +484,14 @@ export const inventoryService = {
     const { data, error, count } = await query.order('name')
     if (error) handleError(error)
 
-    let filtered = data || []
+    const normalized = (data || []).map(normalizeProduct)
+    let filtered = normalized
     if (stockStatus === 'out') {
-      filtered = filtered.filter(p => (p.inventory?.[0]?.quantity || 0) === 0)
+      filtered = filtered.filter(p => p.stock === 0)
     } else if (stockStatus === 'low') {
-      filtered = filtered.filter(p => {
-        const qty = p.inventory?.[0]?.quantity || 0
-        return qty > 0 && qty <= p.minimum_stock
-      })
+      filtered = filtered.filter(p => p.stock > 0 && p.stock <= p.minimum_stock)
     } else if (stockStatus === 'in') {
-      filtered = filtered.filter(p => (p.inventory?.[0]?.quantity || 0) > p.minimum_stock)
+      filtered = filtered.filter(p => p.stock > p.minimum_stock)
     }
 
     const start = (page - 1) * pageSize
@@ -680,11 +715,11 @@ export const reportService = {
   async getStockReport() {
     const { data, error } = await supabase
       .from('products')
-      .select(`*, categories(name), inventory(quantity)`)
+      .select(`*, categories(name), inventory(quantity, reserved_quantity)`)
       .eq('status', 'active')
       .order('name')
     if (error) handleError(error)
-    return data || []
+    return (data || []).map(normalizeProduct)
   },
 
   async getProfitReport({ startDate, endDate } = {}) {

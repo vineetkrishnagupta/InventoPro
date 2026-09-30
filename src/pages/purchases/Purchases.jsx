@@ -12,7 +12,7 @@ import Pagination from '../../components/common/Pagination'
 import Breadcrumb from '../../components/common/Breadcrumb'
 import { DataTable } from '../../components/common/DataTable'
 import toast from 'react-hot-toast'
-import { formatCurrency, formatDate, generatePurchaseNumber, paymentStatusVariant } from '../../utils'
+import { formatCurrency, formatDate, generatePurchaseNumber, paymentStatusVariant, getProductStock } from '../../utils'
 import { printInvoice } from '../../utils/printInvoice'
 import { format } from 'date-fns'
 import clsx from 'clsx'
@@ -233,7 +233,7 @@ export default function Purchases() {
                       className="w-full flex items-center justify-between px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-left">
                       <div>
                         <p className="text-sm font-medium text-gray-900 dark:text-white">{p.name}</p>
-                        <p className="text-xs text-gray-500">{p.sku}</p>
+                        <p className="text-xs text-gray-500">{p.sku} · Stock: {getProductStock(p)} {p.unit || ''}</p>
                       </div>
                       <span className="text-sm text-gray-500">{formatCurrency(p.purchase_price)}</span>
                     </button>

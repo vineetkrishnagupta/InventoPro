@@ -12,7 +12,7 @@ import Pagination from '../../components/common/Pagination'
 import Breadcrumb from '../../components/common/Breadcrumb'
 import { DataTable } from '../../components/common/DataTable'
 import toast from 'react-hot-toast'
-import { formatCurrency, formatDate, generateInvoiceNumber, paymentStatusVariant } from '../../utils'
+import { formatCurrency, formatDate, generateInvoiceNumber, paymentStatusVariant, getProductStock } from '../../utils'
 import { printInvoice } from '../../utils/printInvoice'
 import { format } from 'date-fns'
 
@@ -72,7 +72,7 @@ export default function Sales() {
   }
 
   const addToCart = (product) => {
-    const stock = product.inventory?.[0]?.quantity || 0
+    const stock = getProductStock(product)
     if (stock <= 0) { toast.error(`${product.name} is out of stock`); return }
     const exists = cartItems.find(i => i.product_id === product.id)
     if (exists) {
@@ -221,7 +221,7 @@ export default function Sales() {
               {productResults.length > 0 && (
                 <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl z-20 max-h-48 overflow-y-auto">
                   {productResults.map(p => {
-                    const stock = p.inventory?.[0]?.quantity || 0
+                    const stock = getProductStock(p)
                     return (
                       <button key={p.id} onClick={() => addToCart(p)} disabled={stock <= 0}
                         className="w-full flex items-center justify-between px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-left">

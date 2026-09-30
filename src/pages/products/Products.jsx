@@ -13,7 +13,7 @@ import Pagination from '../../components/common/Pagination'
 import Breadcrumb from '../../components/common/Breadcrumb'
 import { DataTable } from '../../components/common/DataTable'
 import toast from 'react-hot-toast'
-import { formatCurrency, getStockStatus, exportToCSV, parseCSV, generateInvoiceNumber } from '../../utils'
+import { formatCurrency, getStockStatus, getProductStock, exportToCSV, parseCSV, generateInvoiceNumber } from '../../utils'
 import clsx from 'clsx'
 
 const EMPTY_FORM = {
@@ -160,7 +160,7 @@ export default function Products() {
         Brand: p.brand || '', Unit: p.unit || '',
         'Purchase Price': p.purchase_price, 'Selling Price': p.selling_price,
         'Tax %': p.tax_percent, 'Min Stock': p.minimum_stock,
-        'Current Stock': p.inventory?.[0]?.quantity || 0, Status: p.status,
+        'Current Stock': getProductStock(p), Status: p.status,
       })), 'products')
       toast.success('Products exported')
     } catch (err) {
@@ -169,7 +169,7 @@ export default function Products() {
   }
 
   const stockStatus = (product) => {
-    const qty = product.inventory?.[0]?.quantity || 0
+    const qty = getProductStock(product)
     return getStockStatus(qty, product.minimum_stock)
   }
 
@@ -195,7 +195,7 @@ export default function Products() {
     { key: 'selling_price', label: 'Selling', render: (v) => formatCurrency(v) },
     {
       key: 'stock', label: 'Stock', render: (_, row) => {
-        const qty = row.inventory?.[0]?.quantity || 0
+        const qty = getProductStock(row)
         const status = stockStatus(row)
         return (
           <div>
@@ -359,7 +359,7 @@ export default function Products() {
                 ['Selling Price', formatCurrency(viewModal.product.selling_price)],
                 ['Tax %', `${viewModal.product.tax_percent}%`],
                 ['Minimum Stock', viewModal.product.minimum_stock],
-                ['Current Stock', viewModal.product.inventory?.[0]?.quantity || 0],
+                ['Current Stock', `${getProductStock(viewModal.product)} ${viewModal.product.unit || 'pcs'}`],
               ].map(([k, v]) => (
                 <div key={k}>
                   <p className="text-xs text-gray-500 dark:text-gray-400">{k}</p>
