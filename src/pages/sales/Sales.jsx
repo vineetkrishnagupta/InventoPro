@@ -13,6 +13,7 @@ import Breadcrumb from '../../components/common/Breadcrumb'
 import { DataTable } from '../../components/common/DataTable'
 import toast from 'react-hot-toast'
 import { formatCurrency, formatDate, generateInvoiceNumber, paymentStatusVariant } from '../../utils'
+import { printElement } from '../../utils/printInvoice'
 import { format } from 'date-fns'
 
 const PAGE_SIZE = 15
@@ -320,12 +321,12 @@ export default function Sales() {
         footer={
           <div className="flex justify-end gap-3 no-print">
             <Button variant="secondary" onClick={() => setViewModal({ open: false, sale: null })}>Close</Button>
-            <Button variant="primary" icon={Printer} onClick={() => window.print()}>Print PDF</Button>
+            <Button variant="primary" icon={Printer} onClick={() => printElement('sale-print-area', `Invoice - ${viewModal.sale?.invoice_number || ''}`)}>Print PDF</Button>
           </div>
         }
       >
         {viewModal.sale && (
-          <div className="p-6 space-y-4 printable-area">
+          <div id="sale-print-area" className="p-6 space-y-4 printable-area">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
               {[['Invoice', viewModal.sale.invoice_number], ['Customer', viewModal.sale.customers?.name || 'Walk-in'],
                 ['Date', formatDate(viewModal.sale.sale_date)], ['Status', viewModal.sale.payment_status]].map(([k, v]) => (

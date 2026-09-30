@@ -190,23 +190,24 @@
 
   /* Modal backdrop */
   .modal-backdrop {
-    @apply fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 animate-fade-in;
-  }
-
-  .modal-backdrop::before {
-    content: '';
     position: fixed;
     inset: 0;
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-    pointer-events: none;
-    z-index: -1;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.30);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    animation: backdropFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
 
   .modal-content {
-    @apply bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full animate-slide-down overflow-hidden;
+    @apply bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full overflow-hidden;
     position: relative;
     z-index: 1;
+    animation: modalSlideIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
 
   /* Form group */
@@ -275,6 +276,23 @@
 
   .safe-bottom {
     padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* ── Modal animation keyframes ── */
+@keyframes backdropFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }
 

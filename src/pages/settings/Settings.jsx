@@ -14,7 +14,7 @@ const TABS = [
   { id: 'profile', label: 'My Profile', icon: User },
   { id: 'business', label: 'Business', icon: Building2 },
   { id: 'preferences', label: 'App Preferences', icon: SlidersHorizontal },
-  { id: 'appearance', label: 'Theme & Appearance', icon: Palette },
+  { id: 'appearance', label: 'Appearance', icon: Palette },
 ]
 
 export default function SettingsPage() {
@@ -269,7 +269,7 @@ export default function SettingsPage() {
             <div className="card p-6">
               <div className="flex items-center gap-2 mb-2">
                 <Palette className="w-5 h-5 text-primary-600" />
-                <h2 className="text-base font-semibold text-gray-900 dark:text-white">Theme & Appearance</h2>
+                <h2 className="text-base font-semibold text-gray-900 dark:text-white">Appearance</h2>
               </div>
               <p className="text-xs text-gray-500 dark:text-gray-400 mb-6">
                 Customize the look, color scheme, and mode of your InventoPro workspace

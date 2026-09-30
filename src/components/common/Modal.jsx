@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
 import clsx from 'clsx'
 
@@ -41,7 +42,7 @@ export default function Modal({
     if (e.target === overlayRef.current) onClose?.()
   }
 
-  return (
+  return createPortal(
     <div
       ref={overlayRef}
       className="modal-backdrop"
@@ -68,6 +69,7 @@ export default function Modal({
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }

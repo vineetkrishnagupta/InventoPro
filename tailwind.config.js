@@ -33,9 +33,9 @@ export default {
         sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
       },
       animation: {
-        'fade-in': 'fadeIn 0.2s ease-in-out',
-        'slide-in': 'slideIn 0.2s ease-in-out',
-        'slide-down': 'slideDown 0.2s ease-in-out',
+        'fade-in': 'fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
+        'slide-in': 'slideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
+        'slide-down': 'slideDown 0.28s cubic-bezier(0.16, 1, 0.3, 1)',
         'skeleton': 'skeleton 1.5s ease-in-out infinite',
       },
       keyframes: {
