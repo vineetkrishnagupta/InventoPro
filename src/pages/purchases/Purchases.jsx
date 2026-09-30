@@ -13,7 +13,7 @@ import Breadcrumb from '../../components/common/Breadcrumb'
 import { DataTable } from '../../components/common/DataTable'
 import toast from 'react-hot-toast'
 import { formatCurrency, formatDate, generatePurchaseNumber, paymentStatusVariant } from '../../utils'
-import { printElement } from '../../utils/printInvoice'
+import { printInvoice } from '../../utils/printInvoice'
 import { format } from 'date-fns'
 import clsx from 'clsx'
 
@@ -332,7 +332,7 @@ export default function Purchases() {
         footer={
           <div className="flex justify-end gap-3 no-print">
             <Button variant="secondary" onClick={() => setViewModal({ open: false, purchase: null })}>Close</Button>
-            <Button variant="primary" icon={Printer} onClick={() => printElement('purchase-print-area', `Purchase Order - ${viewModal.purchase?.purchase_number || ''}`)}>Print PDF</Button>
+            <Button variant="primary" icon={Printer} onClick={() => printInvoice(viewModal.purchase, 'purchase')}>Print PDF</Button>
           </div>
         }
       >

@@ -13,7 +13,7 @@ import Breadcrumb from '../../components/common/Breadcrumb'
 import { DataTable } from '../../components/common/DataTable'
 import toast from 'react-hot-toast'
 import { formatCurrency, formatDate, generateInvoiceNumber, paymentStatusVariant } from '../../utils'
-import { printElement } from '../../utils/printInvoice'
+import { printInvoice } from '../../utils/printInvoice'
 import { format } from 'date-fns'
 
 const PAGE_SIZE = 15
@@ -321,7 +321,7 @@ export default function Sales() {
         footer={
           <div className="flex justify-end gap-3 no-print">
             <Button variant="secondary" onClick={() => setViewModal({ open: false, sale: null })}>Close</Button>
-            <Button variant="primary" icon={Printer} onClick={() => printElement('sale-print-area', `Invoice - ${viewModal.sale?.invoice_number || ''}`)}>Print PDF</Button>
+            <Button variant="primary" icon={Printer} onClick={() => printInvoice(viewModal.sale, 'sale')}>Print PDF</Button>
           </div>
         }
       >
