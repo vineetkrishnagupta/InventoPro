@@ -272,25 +272,29 @@ export const purchaseService = {
 
     // 3. Increment Inventory
     for (const item of itemsData) {
-      const { data: invData } = await supabase
+      const { data: invData, error: selErr } = await supabase
         .from('inventory')
         .select('quantity')
         .eq('product_id', item.product_id)
         .single()
         
+      if (selErr && selErr.code !== 'PGRST116') handleError(selErr) // PGRST116 is not found
+        
       if (invData) {
-        await supabase
+        const { error: updErr } = await supabase
           .from('inventory')
           .update({ quantity: Number(invData.quantity) + Number(item.quantity) })
           .eq('product_id', item.product_id)
+        if (updErr) handleError(updErr)
       } else {
-        await supabase
+        const { error: insErr } = await supabase
           .from('inventory')
           .insert({
             product_id: item.product_id,
             quantity: Number(item.quantity),
             user_id: user?.id
           })
+        if (insErr) handleError(insErr)
       }
     }
     
@@ -391,16 +395,20 @@ export const salesService = {
 
     // 4. Decrement Inventory
     for (const item of itemsData) {
-      const { data: invData } = await supabase
+      const { data: invData, error: selErr } = await supabase
         .from('inventory')
         .select('quantity')
         .eq('product_id', item.product_id)
         .single()
         
-      await supabase
+      if (selErr) handleError(selErr)
+        
+      const { error: updErr } = await supabase
         .from('inventory')
         .update({ quantity: Number(invData.quantity) - Number(item.quantity) })
         .eq('product_id', item.product_id)
+        
+      if (updErr) handleError(updErr)
     }
     
     // 5. Create Payment if Paid
