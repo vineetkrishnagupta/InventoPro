@@ -108,7 +108,7 @@ export default function Navbar({ onMenuClick }) {
   }, [])
 
   return (
-    <header className="h-14 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-3 lg:px-5 flex-shrink-0 sticky top-0 z-20 shadow-2xs">
+    <header className="h-14 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-3 lg:px-5 flex-shrink-0 sticky top-0 z-20 shadow-sm">
       {/* Left: Mobile Toggle & Zoho Org Indicator */}
       <div className="flex items-center gap-3">
         <button
@@ -162,7 +162,7 @@ export default function Navbar({ onMenuClick }) {
         <div className="relative" ref={quickCreateRef}>
           <button
             onClick={() => setQuickCreateOpen(!quickCreateOpen)}
-            className="flex items-center gap-1 px-2.5 py-1 bg-[#0066cc] hover:bg-[#0052a3] text-white rounded-md text-xs font-semibold shadow-xs transition-colors"
+            className="flex items-center gap-1 px-2.5 py-1 bg-[#0066cc] hover:bg-[#0052a3] text-white rounded-md text-xs font-semibold shadow-sm transition-colors"
             title="Quick Create"
           >
             <span className="text-base leading-none font-bold">+</span>
@@ -313,7 +313,7 @@ export default function Navbar({ onMenuClick }) {
             onClick={() => setUserMenuOpen(!userMenuOpen)}
             className="flex items-center gap-2 p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
           >
-            <div className="w-7 h-7 rounded-md bg-[#0066cc] flex items-center justify-center font-bold text-white text-xs shadow-xs">
+            <div className="w-7 h-7 rounded-md bg-[#0066cc] flex items-center justify-center font-bold text-white text-xs shadow-sm">
               {profile?.full_name?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || 'U'}
             </div>
             <div className="hidden lg:block text-left">

@@ -152,7 +152,7 @@
   }
 
   .btn-secondary {
-    @apply btn bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-600 focus:ring-slate-300 shadow-2xs;
+    @apply btn bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-600 focus:ring-slate-300 shadow-sm;
   }
 
   .btn-danger {
@@ -181,7 +181,7 @@
   }
 
   .sidebar-item-active {
-    @apply sidebar-item bg-[#0066cc] text-white shadow-xs font-semibold;
+    @apply sidebar-item bg-[#0066cc] text-white shadow-sm font-semibold;
   }
 
   .sidebar-item-inactive {

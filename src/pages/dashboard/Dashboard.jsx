@@ -25,7 +25,7 @@ const DATE_FILTERS = [
 function StatCard({ title, value, icon: Icon, iconBg, iconColor, change, prefix = '', suffix = '' }) {
   const isPositive = change >= 0
   return (
-    <div className="card p-4 flex items-start justify-between hover:border-slate-300 dark:hover:border-slate-700 transition-all shadow-2xs group">
+    <div className="card p-4 flex items-start justify-between hover:border-slate-300 dark:hover:border-slate-700 transition-all shadow-sm group">
       <div>
         <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1 tracking-tight">{title}</p>
         <p className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
