@@ -288,12 +288,18 @@ DECLARE
   item JSONB;
   v_user_id UUID;
 BEGIN
-  v_user_id := COALESCE((purchase_data->>'user_id')::UUID, (purchase_data->>'created_by')::UUID, auth.uid());
+  v_user_id := COALESCE(
+    (purchase_data->>'user_id')::UUID,
+    (purchase_data->>'created_by')::UUID,
+    auth.uid()
+  );
 
-  -- Insert purchase
+  -- Insert purchase record
   INSERT INTO purchases (
-    purchase_number, supplier_id, purchase_date, subtotal, discount, tax,
-    total_amount, payment_status, payment_method, notes, created_by, user_id
+    purchase_number, supplier_id, purchase_date,
+    subtotal, discount, tax, total_amount,
+    payment_status, payment_method, notes,
+    created_by, user_id
   )
   VALUES (
     purchase_data->>'purchase_number',
@@ -311,10 +317,14 @@ BEGIN
   )
   RETURNING id INTO purchase_id;
 
-  -- Insert items and update inventory
+  -- Insert items and INCREMENT inventory
   FOR item IN SELECT * FROM jsonb_array_elements(items_data) LOOP
-    -- Insert purchase item
-    INSERT INTO purchase_items (purchase_id, product_id, quantity, purchase_price, tax_percent, discount, total, user_id)
+
+    -- Insert purchase item row
+    INSERT INTO purchase_items (
+      purchase_id, product_id, quantity,
+      purchase_price, tax_percent, discount, total, user_id
+    )
     VALUES (
       purchase_id,
       (item->>'product_id')::UUID,
@@ -326,18 +336,28 @@ BEGIN
       v_user_id
     );
 
-    -- Update or insert inventory
-    INSERT INTO inventory (product_id, quantity, updated_at, user_id)
-    VALUES ((item->>'product_id')::UUID, (item->>'quantity')::NUMERIC, NOW(), v_user_id)
-    ON CONFLICT (product_id) DO UPDATE
-    SET quantity = inventory.quantity + (item->>'quantity')::NUMERIC,
-        updated_at = NOW(),
-        user_id = v_user_id;
+    -- INCREMENT stock
+    INSERT INTO inventory (product_id, quantity, reserved_quantity, updated_at, user_id)
+    VALUES (
+      (item->>'product_id')::UUID,
+      (item->>'quantity')::NUMERIC,
+      0,
+      NOW(),
+      v_user_id
+    )
+    ON CONFLICT (product_id)
+    DO UPDATE SET
+      quantity   = inventory.quantity + EXCLUDED.quantity,
+      updated_at = NOW();
+
   END LOOP;
 
-  -- Create payment record if paid
+  -- Create payment record if status is 'paid'
   IF purchase_data->>'payment_status' = 'paid' THEN
-    INSERT INTO payments (transaction_type, transaction_id, amount, payment_method, payment_date, created_by, user_id)
+    INSERT INTO payments (
+      transaction_type, transaction_id, amount,
+      payment_method, payment_date, created_by, user_id
+    )
     VALUES (
       'purchase', purchase_id,
       (purchase_data->>'total_amount')::NUMERIC,
@@ -353,7 +373,7 @@ BEGIN
   VALUES (
     v_user_id,
     'CREATE_PURCHASE', 'PURCHASES', purchase_id,
-    'Created purchase order: ' || (purchase_data->>'purchase_number')
+    'Purchase order created: ' || (purchase_data->>'purchase_number')
   );
 
   RETURN purchase_id;
