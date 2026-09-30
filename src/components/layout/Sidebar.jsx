@@ -98,48 +98,53 @@ export default function Sidebar({ isOpen, onClose, isCollapsed, toggleCollapse }
       {/* Sidebar */}
       <aside
         className={clsx(
-          'fixed top-0 left-0 h-full bg-[#0f172a] z-40 flex flex-col transition-all duration-300',
+          'fixed top-0 left-0 h-full bg-[#182234] border-r border-slate-700/60 z-40 flex flex-col transition-all duration-300 shadow-lg',
           'lg:translate-x-0',
           isOpen ? 'translate-x-0' : '-translate-x-full',
-          isCollapsed ? 'w-[72px]' : 'w-64'
+          isCollapsed ? 'w-[68px]' : 'w-60'
         )}
       >
-        {/* Logo & Toggle */}
-        <div className={clsx("flex items-center h-16 border-b border-slate-700/50 flex-shrink-0", isCollapsed ? "justify-center" : "px-4 justify-between")}>
+        {/* Logo & Toggle - Zoho Inventory Style */}
+        <div className={clsx("flex items-center h-14 border-b border-slate-700/60 flex-shrink-0 bg-[#141c2b]", isCollapsed ? "justify-center" : "px-3.5 justify-between")}>
           {!isCollapsed ? (
             <>
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-primary-600 flex items-center justify-center flex-shrink-0">
-                  <BarChart2 className="w-5 h-5 text-white" />
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-7 h-7 rounded-md bg-[#0066cc] flex items-center justify-center flex-shrink-0 shadow-xs">
+                  <BarChart2 className="w-4 h-4 text-white" />
                 </div>
-                <div>
-                  <span className="text-white font-semibold text-sm leading-tight">InventoPro</span>
-                  <p className="text-slate-500 text-xs leading-tight">Management System</p>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-white font-bold text-sm tracking-tight">InventoPro</span>
+                    <span className="text-[9px] uppercase font-bold tracking-wider px-1 py-0.2 bg-sky-500/20 text-sky-400 rounded">
+                      Zoho
+                    </span>
+                  </div>
+                  <p className="text-slate-400 text-[10px] truncate leading-none mt-0.5">Inventory & Books</p>
                 </div>
               </div>
               <div className="flex items-center">
                 <button
                   onClick={onClose}
-                  className="lg:hidden p-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
+                  className="lg:hidden p-1 text-slate-400 hover:text-white hover:bg-slate-700/70 rounded transition-colors"
                 >
                   <X className="w-4 h-4" />
                 </button>
                 <button 
                   onClick={toggleCollapse}
-                  className="hidden lg:flex p-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors ml-1"
+                  className="hidden lg:flex p-1 text-slate-400 hover:text-white hover:bg-slate-700/70 rounded transition-colors ml-1"
                   title="Collapse sidebar"
                 >
-                  <ChevronLeft className="w-5 h-5" />
+                  <ChevronLeft className="w-4 h-4" />
                 </button>
               </div>
             </>
           ) : (
             <button 
               onClick={toggleCollapse}
-              className="hidden lg:flex p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
+              className="hidden lg:flex p-1.5 text-slate-400 hover:text-white hover:bg-slate-700/70 rounded transition-colors"
               title="Expand sidebar"
             >
-              <ChevronRight className="w-6 h-6" />
+              <ChevronRight className="w-5 h-5" />
             </button>
           )}
         </div>

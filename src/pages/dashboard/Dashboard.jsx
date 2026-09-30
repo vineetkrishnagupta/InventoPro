@@ -25,24 +25,24 @@ const DATE_FILTERS = [
 function StatCard({ title, value, icon: Icon, iconBg, iconColor, change, prefix = '', suffix = '' }) {
   const isPositive = change >= 0
   return (
-    <div className="stat-card">
+    <div className="card p-4 flex items-start justify-between hover:border-slate-300 dark:hover:border-slate-700 transition-all shadow-2xs group">
       <div>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">{title}</p>
-        <p className="text-2xl font-bold text-gray-900 dark:text-white">
+        <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1 tracking-tight">{title}</p>
+        <p className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
           {prefix}{typeof value === 'number' ? formatNumber(Math.round(value)) : value}{suffix}
         </p>
         {change !== undefined && (
           <div className={clsx(
-            'flex items-center gap-1 text-xs font-medium mt-1',
-            isPositive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+            'flex items-center gap-1 text-[11px] font-medium mt-1',
+            isPositive ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
           )}>
-            {isPositive ? <ArrowUpRight className="w-3.5 h-3.5" /> : <ArrowDownRight className="w-3.5 h-3.5" />}
+            {isPositive ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
             {Math.abs(change).toFixed(1)}% vs yesterday
           </div>
         )}
       </div>
-      <div className={clsx('w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0', iconBg)}>
-        <Icon className={clsx('w-6 h-6', iconColor)} />
+      <div className={clsx('w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-105', iconBg)}>
+        <Icon className={clsx('w-5 h-5', iconColor)} />
       </div>
     </div>
   )

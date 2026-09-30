@@ -3,19 +3,19 @@ import { Link } from 'react-router-dom'
 
 export default function Breadcrumb({ items }) {
   return (
-    <nav className="flex items-center gap-1 text-sm mb-4">
-      <Link to="/dashboard" className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+    <nav className="flex items-center gap-1.5 text-xs mb-3 select-none">
+      <Link to="/dashboard" className="text-slate-400 hover:text-[#0066cc] dark:hover:text-blue-400 transition-colors flex items-center gap-1">
         <Home className="w-3.5 h-3.5" />
       </Link>
       {items.map((item, index) => (
-        <span key={index} className="flex items-center gap-1">
-          <ChevronRight className="w-3.5 h-3.5 text-gray-300 dark:text-gray-600" />
+        <span key={index} className="flex items-center gap-1.5">
+          <span className="text-slate-300 dark:text-slate-600 font-light">/</span>
           {item.href && index < items.length - 1 ? (
-            <Link to={item.href} className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors">
+            <Link to={item.href} className="text-slate-500 hover:text-[#0066cc] dark:text-slate-400 dark:hover:text-blue-400 transition-colors font-medium">
               {item.label}
             </Link>
           ) : (
-            <span className="text-gray-700 dark:text-gray-300 font-medium">{item.label}</span>
+            <span className="text-slate-800 dark:text-slate-200 font-semibold">{item.label}</span>
           )}
         </span>
       ))}

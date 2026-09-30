@@ -22,11 +22,21 @@ export default {
           950: 'rgb(var(--color-primary-950) / <alpha-value>)',
         },
         sidebar: {
-          bg: '#0f172a',
+          bg: '#182234',
           text: '#94a3b8',
-          active: '#3b82f6',
-          hover: '#1e293b',
-          border: '#1e293b',
+          active: '#0066cc',
+          hover: '#222f46',
+          border: '#24334a',
+        },
+        zoho: {
+          blue: '#0066cc',
+          blueHover: '#0052a3',
+          red: '#f0483e',
+          green: '#10b981',
+          amber: '#f59e0b',
+          dark: '#182234',
+          canvas: '#f4f6f9',
+          border: '#e2e8f0',
         }
       },
       fontFamily: {
