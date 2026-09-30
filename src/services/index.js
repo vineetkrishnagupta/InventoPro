@@ -245,14 +245,69 @@ export const purchaseService = {
   async create(purchase, items) {
     const { data: { user } } = await supabase.auth.getUser()
     const purchaseData = { ...purchase, user_id: user?.id, created_by: user?.id }
-    const itemsData = (items || []).map(item => ({ ...item, user_id: user?.id }))
-    // Use RPC for atomic operation
-    const { data, error } = await supabase.rpc('create_purchase', {
-      purchase_data: purchaseData,
-      items_data: itemsData,
-    })
-    if (error) handleError(error)
-    return data
+    
+    // 1. Create Purchase
+    const { data: purchaseResult, error: pError } = await supabase
+      .from('purchases')
+      .insert(purchaseData)
+      .select('id')
+      .single()
+      
+    if (pError) handleError(pError)
+    
+    const purchaseId = purchaseResult.id
+    
+    // 2. Create Items
+    const itemsData = (items || []).map(item => ({ 
+      ...item, 
+      purchase_id: purchaseId, 
+      user_id: user?.id 
+    }))
+    
+    const { error: iError } = await supabase
+      .from('purchase_items')
+      .insert(itemsData)
+      
+    if (iError) handleError(iError)
+
+    // 3. Increment Inventory
+    for (const item of itemsData) {
+      const { data: invData } = await supabase
+        .from('inventory')
+        .select('quantity')
+        .eq('product_id', item.product_id)
+        .single()
+        
+      if (invData) {
+        await supabase
+          .from('inventory')
+          .update({ quantity: Number(invData.quantity) + Number(item.quantity) })
+          .eq('product_id', item.product_id)
+      } else {
+        await supabase
+          .from('inventory')
+          .insert({
+            product_id: item.product_id,
+            quantity: Number(item.quantity),
+            user_id: user?.id
+          })
+      }
+    }
+    
+    // 4. Create Payment if Paid
+    if (purchaseData.payment_status === 'paid') {
+      await supabase.from('payments').insert({
+        transaction_type: 'purchase',
+        transaction_id: purchaseId,
+        amount: purchaseData.total_amount,
+        payment_method: purchaseData.payment_method,
+        payment_date: purchaseData.purchase_date,
+        created_by: user?.id,
+        user_id: user?.id
+      })
+    }
+    
+    return purchaseId
   },
 
   async updateStatus(id, status) {
@@ -296,16 +351,72 @@ export const salesService = {
   async create(sale, items) {
     const { data: { user } } = await supabase.auth.getUser()
     const saleData = { ...sale, user_id: user?.id, created_by: user?.id }
-    const itemsData = (items || []).map(item => ({ ...item, user_id: user?.id }))
-    const { data, error } = await supabase.rpc('create_sale', {
-      sale_data: saleData,
-      items_data: itemsData,
-    })
-    if (error) {
-      if (error.message?.includes('Insufficient stock')) throw new Error(error.message)
-      handleError(error)
+    
+    // 1. Verify Stock first
+    for (const item of items) {
+      const { data: invData } = await supabase
+        .from('inventory')
+        .select('quantity, products(name)')
+        .eq('product_id', item.product_id)
+        .single()
+        
+      if (!invData || Number(invData.quantity) < Number(item.quantity)) {
+        throw new Error(`Insufficient stock for product. Available: ${invData?.quantity || 0}`)
+      }
     }
-    return data
+
+    // 2. Create Sale
+    const { data: saleResult, error: sError } = await supabase
+      .from('sales')
+      .insert(saleData)
+      .select('id')
+      .single()
+      
+    if (sError) handleError(sError)
+    
+    const saleId = saleResult.id
+    
+    // 3. Create Items
+    const itemsData = (items || []).map(item => ({ 
+      ...item, 
+      sale_id: saleId, 
+      user_id: user?.id 
+    }))
+    
+    const { error: iError } = await supabase
+      .from('sale_items')
+      .insert(itemsData)
+      
+    if (iError) handleError(iError)
+
+    // 4. Decrement Inventory
+    for (const item of itemsData) {
+      const { data: invData } = await supabase
+        .from('inventory')
+        .select('quantity')
+        .eq('product_id', item.product_id)
+        .single()
+        
+      await supabase
+        .from('inventory')
+        .update({ quantity: Number(invData.quantity) - Number(item.quantity) })
+        .eq('product_id', item.product_id)
+    }
+    
+    // 5. Create Payment if Paid
+    if (saleData.payment_status === 'paid') {
+      await supabase.from('payments').insert({
+        transaction_type: 'sale',
+        transaction_id: saleId,
+        amount: saleData.total_amount,
+        payment_method: saleData.payment_method,
+        payment_date: saleData.sale_date,
+        created_by: user?.id,
+        user_id: user?.id
+      })
+    }
+    
+    return saleId
   },
 }
 
