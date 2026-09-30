@@ -279,22 +279,157 @@
 }
 
 @media print {
-  body * {
-    visibility: hidden;
+  /* ── Reset everything ── */
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
-  .printable-area, .printable-area * {
-    visibility: visible;
+
+  /* Hide entire page chrome */
+  html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+    font-family: 'Inter', Arial, sans-serif !important;
+    font-size: 13px !important;
+    color: #111 !important;
+    -webkit-font-smoothing: antialiased !important;
   }
-  .printable-area {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    margin: 0;
-    padding: 20px;
-    background: white;
-  }
-  .no-print {
+
+  /* Hide everything by default */
+  body > * {
     display: none !important;
+  }
+
+  /* Show only modal overlay */
+  .modal-backdrop {
+    display: block !important;
+    position: static !important;
+    background: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+  }
+
+  /* Show modal content wrapper */
+  .modal-content {
+    display: block !important;
+    position: static !important;
+    box-shadow: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    background: #fff !important;
+  }
+
+  /* Modal content visibility cascade */
+  .modal-backdrop,
+  .modal-backdrop *,
+  .modal-content,
+  .modal-content * {
+    visibility: visible !important;
+  }
+
+  /* ── No-print elements ── */
+  .no-print,
+  [data-no-print],
+  button,
+  .btn {
+    display: none !important;
+  }
+
+  /* ── Printable area ── */
+  .printable-area {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    margin: 0 auto !important;
+    padding: 24px 32px !important;
+    background: #fff !important;
+    page-break-inside: avoid;
+  }
+
+  /* ── Typography ── */
+  .printable-area h1,
+  .printable-area h2,
+  .printable-area h3 {
+    color: #111 !important;
+    margin-bottom: 8px !important;
+  }
+
+  .printable-area p,
+  .printable-area span,
+  .printable-area td,
+  .printable-area th {
+    color: #222 !important;
+  }
+
+  /* ── Table ── */
+  .printable-area table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    margin-top: 12px !important;
+    font-size: 12px !important;
+  }
+
+  .printable-area thead {
+    background-color: #f3f4f6 !important;
+  }
+
+  .printable-area th {
+    padding: 8px 10px !important;
+    text-align: left !important;
+    font-weight: 600 !important;
+    font-size: 11px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.04em !important;
+    border-bottom: 2px solid #e5e7eb !important;
+    color: #374151 !important;
+  }
+
+  .printable-area td {
+    padding: 8px 10px !important;
+    border-bottom: 1px solid #e5e7eb !important;
+    color: #111827 !important;
+  }
+
+  .printable-area tr:last-child td {
+    border-bottom: none !important;
+  }
+
+  /* ── Divider ── */
+  .printable-area .divider,
+  .printable-area hr {
+    border: none !important;
+    border-top: 1px solid #d1d5db !important;
+    margin: 12px 0 !important;
+  }
+
+  /* ── Summary / totals box ── */
+  .printable-area .bg-gray-50,
+  .printable-area [class*="bg-gray"] {
+    background-color: #f9fafb !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 8px !important;
+  }
+
+  /* ── Grid layout ── */
+  .printable-area .grid {
+    display: grid !important;
+  }
+
+  /* ── Page settings ── */
+  @page {
+    size: A4;
+    margin: 16mm 12mm;
   }
 }
