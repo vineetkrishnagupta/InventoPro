@@ -70,7 +70,7 @@
 
   /* Custom checkbox */
   .custom-checkbox {
-    @apply w-4 h-4 rounded border-slate-300 text-[#0066cc] focus:ring-[#0066cc];
+    @apply w-4 h-4 rounded border-slate-300 dark:border-slate-600 text-primary-600 focus:ring-primary-500;
   }
 
   /* Table styles - Zoho Grid */
@@ -83,7 +83,7 @@
   }
 
   .table-row {
-    @apply bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800/70 hover:bg-blue-50/30 dark:hover:bg-slate-800/50 transition-colors;
+    @apply bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800/70 hover:bg-primary-50/30 dark:hover:bg-primary-950/20 transition-colors;
   }
 
   .table-cell {
@@ -113,7 +113,7 @@
   }
 
   .badge-blue {
-    @apply badge bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800/60;
+    @apply badge bg-primary-50 text-primary-700 border-primary-200 dark:bg-primary-950/40 dark:text-primary-300 dark:border-primary-800/60;
   }
 
   .badge-gray {
@@ -131,7 +131,7 @@
 
   /* Zoho Input styles */
   .input {
-    @apply w-full px-3 py-1.5 rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-[#0066cc] transition-colors;
+    @apply w-full px-3 py-1.5 rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-100 dark:focus:ring-primary-950/40 focus:border-primary-600 transition-colors;
   }
 
   .input-error {
@@ -144,11 +144,11 @@
 
   /* Zoho Button styles */
   .btn {
-    @apply inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 rounded-md text-xs md:text-sm font-medium transition-all duration-150 disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-1;
+    @apply inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 rounded-md text-xs md:text-sm font-medium transition-all duration-150 disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-1 dark:focus:ring-offset-slate-900;
   }
 
   .btn-primary {
-    @apply btn bg-[#0066cc] hover:bg-[#0052a3] text-white focus:ring-blue-400 shadow-sm active:bg-[#004285];
+    @apply btn bg-primary-600 hover:bg-primary-700 text-white focus:ring-primary-400 shadow-sm active:bg-primary-800;
   }
 
   .btn-secondary {
@@ -181,7 +181,7 @@
   }
 
   .sidebar-item-active {
-    @apply sidebar-item bg-[#0066cc] text-white shadow-sm font-semibold;
+    @apply sidebar-item bg-primary-600 text-white shadow-sm font-semibold;
   }
 
   .sidebar-item-inactive {

@@ -95,7 +95,7 @@ export default function Customers() {
     { key: 'actions', label: '', cellClassName: 'text-right', render: (_, row) => (
       <div className="flex items-center gap-1 justify-end">
         <button onClick={() => setViewModal({ open: true, customer: row })}
-          className="p-1.5 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors">
+          className="p-1.5 rounded-lg text-gray-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors">
           <Eye className="w-4 h-4" />
         </button>
         {isManager && (

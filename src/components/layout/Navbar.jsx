@@ -124,7 +124,7 @@ export default function Navbar({ onMenuClick }) {
           <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 tracking-tight">
             InventoPro Store
           </span>
-          <span className="text-[10px] uppercase font-bold px-1.5 py-0.2 bg-[#0066cc]/10 text-[#0066cc] dark:bg-blue-900/30 dark:text-blue-300 rounded">
+          <span className="text-[10px] uppercase font-bold px-1.5 py-0.2 bg-primary-500/10 text-primary-600 dark:bg-primary-950/40 dark:text-primary-300 rounded">
             Live
           </span>
         </div>
@@ -146,7 +146,7 @@ export default function Navbar({ onMenuClick }) {
                 navigate(`/products?search=${encodeURIComponent(e.target.value.trim())}`)
               }
             }}
-            className="w-full pl-8 pr-12 py-1 text-xs rounded-md bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 focus:bg-white dark:focus:bg-slate-900 focus:border-[#0066cc] focus:ring-1 focus:ring-[#0066cc] transition-all text-slate-800 dark:text-slate-100 placeholder-slate-400"
+            className="w-full pl-8 pr-12 py-1 text-xs rounded-md bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 focus:bg-white dark:focus:bg-slate-900 focus:border-primary-600 focus:ring-1 focus:ring-primary-600 transition-all text-slate-800 dark:text-slate-100 placeholder-slate-400"
           />
           <div className="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none">
             <kbd className="px-1.5 py-0.5 text-[10px] font-mono text-slate-400 bg-slate-200/60 dark:bg-slate-700 rounded border border-slate-300/60 dark:border-slate-600">
@@ -162,7 +162,7 @@ export default function Navbar({ onMenuClick }) {
         <div className="relative" ref={quickCreateRef}>
           <button
             onClick={() => setQuickCreateOpen(!quickCreateOpen)}
-            className="flex items-center gap-1 px-2.5 py-1 bg-[#0066cc] hover:bg-[#0052a3] text-white rounded-md text-xs font-semibold shadow-sm transition-colors"
+            className="flex items-center gap-1 px-2.5 py-1 bg-primary-600 hover:bg-primary-700 text-white rounded-md text-xs font-semibold shadow-sm transition-colors"
             title="Quick Create"
           >
             <span className="text-base leading-none font-bold">+</span>
@@ -178,33 +178,33 @@ export default function Navbar({ onMenuClick }) {
                 <Link
                   to="/products"
                   onClick={() => setQuickCreateOpen(false)}
-                  className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-[#0066cc] transition-colors"
+                  className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-primary-600 transition-colors"
                 >
-                  <span className="w-5 h-5 rounded bg-blue-50 text-[#0066cc] flex items-center justify-center font-bold text-xs">+</span>
+                  <span className="w-5 h-5 rounded bg-primary-50 dark:bg-primary-950/40 text-primary-600 dark:text-primary-400 flex items-center justify-center font-bold text-xs">+</span>
                   New Product / Item
                 </Link>
                 <Link
                   to="/purchases"
                   onClick={() => setQuickCreateOpen(false)}
-                  className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-[#0066cc] transition-colors"
+                  className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-primary-600 transition-colors"
                 >
-                  <span className="w-5 h-5 rounded bg-amber-50 text-amber-600 flex items-center justify-center font-bold text-xs">+</span>
+                  <span className="w-5 h-5 rounded bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold text-xs">+</span>
                   New Purchase Order
                 </Link>
                 <Link
                   to="/sales"
                   onClick={() => setQuickCreateOpen(false)}
-                  className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-[#0066cc] transition-colors"
+                  className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-primary-600 transition-colors"
                 >
-                  <span className="w-5 h-5 rounded bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-xs">+</span>
+                  <span className="w-5 h-5 rounded bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold text-xs">+</span>
                   New Invoice / Sale
                 </Link>
                 <Link
                   to="/stock-adjustments"
                   onClick={() => setQuickCreateOpen(false)}
-                  className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-[#0066cc] transition-colors"
+                  className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-primary-600 transition-colors"
                 >
-                  <span className="w-5 h-5 rounded bg-purple-50 text-purple-600 flex items-center justify-center font-bold text-xs">+</span>
+                  <span className="w-5 h-5 rounded bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 flex items-center justify-center font-bold text-xs">+</span>
                   Stock Adjustment
                 </Link>
                 <div className="border-t border-slate-100 dark:border-slate-800 my-1" />
@@ -258,7 +258,7 @@ export default function Navbar({ onMenuClick }) {
               <div className="flex items-center justify-between px-3.5 py-2.5 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50">
                 <h3 className="font-semibold text-slate-900 dark:text-white text-xs">Notifications</h3>
                 {unreadCount > 0 && (
-                  <button onClick={markAllRead} className="text-[11px] text-[#0066cc] hover:underline font-medium flex items-center gap-1">
+                  <button onClick={markAllRead} className="text-[11px] text-primary-600 dark:text-primary-400 hover:underline font-medium flex items-center gap-1">
                     <Check className="w-3 h-3" />Mark all read
                   </button>
                 )}
@@ -274,12 +274,12 @@ export default function Navbar({ onMenuClick }) {
                       key={n.id}
                       className={clsx(
                         'px-3.5 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer transition-colors',
-                        !n.is_read && 'bg-blue-50/40 dark:bg-blue-900/10'
+                        !n.is_read && 'bg-primary-50/40 dark:bg-primary-950/20'
                       )}
                       onClick={() => markOneRead(n.id)}
                     >
                       <div className="flex items-start gap-2">
-                        <div className={clsx('mt-1 w-1.5 h-1.5 rounded-full flex-shrink-0', !n.is_read ? 'bg-[#0066cc]' : 'bg-transparent')} />
+                        <div className={clsx('mt-1 w-1.5 h-1.5 rounded-full flex-shrink-0', !n.is_read ? 'bg-primary-600' : 'bg-transparent')} />
                         <div className="min-w-0">
                           <p className="text-xs font-semibold text-slate-900 dark:text-white">{n.title}</p>
                           <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-2">{n.message}</p>
@@ -296,7 +296,7 @@ export default function Navbar({ onMenuClick }) {
                 <Link
                   to="/notifications"
                   onClick={() => setNotifOpen(false)}
-                  className="block text-center text-xs text-[#0066cc] hover:underline font-medium"
+                  className="block text-center text-xs text-primary-600 dark:text-primary-400 hover:underline font-medium"
                 >
                   View all notifications →
                 </Link>
@@ -313,7 +313,7 @@ export default function Navbar({ onMenuClick }) {
             onClick={() => setUserMenuOpen(!userMenuOpen)}
             className="flex items-center gap-2 p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
           >
-            <div className="w-7 h-7 rounded-md bg-[#0066cc] flex items-center justify-center font-bold text-white text-xs shadow-sm">
+            <div className="w-7 h-7 rounded-md bg-primary-600 flex items-center justify-center font-bold text-white text-xs shadow-sm">
               {profile?.full_name?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || 'U'}
             </div>
             <div className="hidden lg:block text-left">
@@ -337,7 +337,7 @@ export default function Navbar({ onMenuClick }) {
                 <Link
                   to="/settings"
                   onClick={() => setUserMenuOpen(false)}
-                  className="flex items-center gap-2 px-3.5 py-1.5 text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-[#0066cc] transition-colors"
+                  className="flex items-center gap-2 px-3.5 py-1.5 text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-primary-600 transition-colors"
                 >
                   <Settings className="w-3.5 h-3.5 text-slate-400" />
                   Preferences & Settings

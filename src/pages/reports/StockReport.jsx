@@ -72,7 +72,7 @@ export default function StockReport() {
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: 'Total Products', value: summary.total, color: 'text-blue-600' },
+          { label: 'Total Products', value: summary.total, color: 'text-primary-600 dark:text-primary-400' },
           { label: 'Low Stock', value: summary.low, color: 'text-yellow-600' },
           { label: 'Out of Stock', value: summary.out, color: 'text-red-600' },
           { label: 'Stock Value', value: formatCurrency(summary.value), color: 'text-emerald-600' },

@@ -167,11 +167,11 @@ export default function StockAdjustments() {
             error={errors.product_id} required />
 
           {selectedProduct && (
-            <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 text-sm">
-              <p className="text-blue-700 dark:text-blue-300 font-medium">
+            <div className="bg-primary-50 dark:bg-primary-900/20 rounded-lg p-3 text-sm border border-primary-100 dark:border-primary-900/30">
+              <p className="text-primary-700 dark:text-primary-300 font-medium">
                 Current Stock: <strong>{currentStock} {selectedProduct.unit}</strong>
               </p>
-              <p className="text-blue-600 dark:text-blue-400 text-xs mt-0.5">
+              <p className="text-primary-600 dark:text-primary-400 text-xs mt-0.5">
                 Minimum Stock: {selectedProduct.minimum_stock}
               </p>
             </div>

@@ -346,7 +346,7 @@ export default function SettingsPage() {
                           'group flex flex-col items-center gap-2 p-2.5 rounded-xl border transition-all text-xs font-medium',
                           isSelected
                             ? 'border-gray-400 dark:border-gray-500 ring-2 ring-primary-500/30 bg-gray-50 dark:bg-gray-800'
-                            : 'border-gray-200 dark:border-gray-700/80 hover:border-gray-300 dark:hover:border-gray-600 bg-white dark:bg-gray-850'
+                            : 'border-gray-200 dark:border-gray-700/80 hover:border-gray-300 dark:hover:border-gray-600 bg-white dark:bg-gray-800'
                         )}
                       >
                         <div

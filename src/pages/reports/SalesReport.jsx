@@ -74,7 +74,7 @@ export default function SalesReport() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
           { label: 'Total Sales', value: formatCurrency(summary.total), color: 'text-green-600' },
-          { label: 'Total Orders', value: summary.count, color: 'text-blue-600' },
+          { label: 'Total Orders', value: summary.count, color: 'text-primary-600 dark:text-primary-400' },
           { label: 'Total Tax', value: formatCurrency(summary.tax), color: 'text-orange-600' },
           { label: 'Total Discount', value: formatCurrency(summary.discount), color: 'text-red-600' },
         ].map(s => (

@@ -10,6 +10,7 @@ import {
 import { dashboardService } from '../../services'
 import { formatCurrency, formatDate, formatNumber } from '../../utils'
 import { useAuth } from '../../context/AuthContext'
+import { useTheme } from '../../context/ThemeContext'
 import Button from '../../components/common/Button'
 import Badge from '../../components/common/Badge'
 import { format, subDays, eachDayOfInterval } from 'date-fns'
@@ -66,6 +67,7 @@ const CustomTooltip = ({ active, payload, label, prefix = '' }) => {
 
 export default function Dashboard() {
   const { profile } = useAuth()
+  const { isDark } = useTheme()
   const [stats, setStats] = useState(null)
   const [chartData, setChartData] = useState([])
   const [topProducts, setTopProducts] = useState([])
@@ -175,8 +177,8 @@ export default function Dashboard() {
             title="Total Products"
             value={stats?.totalProducts || 0}
             icon={Package}
-            iconBg="bg-blue-50 dark:bg-blue-900/20"
-            iconColor="text-blue-600 dark:text-blue-400"
+            iconBg="bg-primary-50 dark:bg-primary-900/20"
+            iconColor="text-primary-600 dark:text-primary-400"
           />
           <StatCard
             title="Stock Value"
@@ -275,9 +277,9 @@ export default function Dashboard() {
                     <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} tickFormatter={v => `₹${formatNumber(v)}`} width={70} />
+                <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#334155' : '#f1f5f9'} vertical={false} />
+                <XAxis dataKey="date" tick={{ fontSize: 11, fill: isDark ? '#94a3b8' : '#64748b' }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 11, fill: isDark ? '#94a3b8' : '#64748b' }} axisLine={false} tickLine={false} tickFormatter={v => `₹${formatNumber(v)}`} width={70} />
                 <Tooltip content={<CustomTooltip prefix="₹" />} />
                 <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: '12px', paddingTop: '12px' }} />
                 <Area type="monotone" dataKey="Sales" stroke="#3b82f6" strokeWidth={2} fill="url(#salesGradient)" dot={false} />

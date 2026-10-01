@@ -109,13 +109,13 @@ export default function Sidebar({ isOpen, onClose, isCollapsed, toggleCollapse }
           {!isCollapsed ? (
             <>
               <div className="flex items-center gap-2.5 min-w-0">
-                <div className="w-7 h-7 rounded-md bg-[#0066cc] flex items-center justify-center flex-shrink-0 shadow-sm">
+                <div className="w-7 h-7 rounded-md bg-primary-600 flex items-center justify-center flex-shrink-0 shadow-sm">
                   <BarChart2 className="w-4 h-4 text-white" />
                 </div>
                 <div className="min-w-0">
                   <div className="flex items-center gap-1.5">
                     <span className="text-white font-bold text-sm tracking-tight">InventoPro</span>
-                    <span className="text-[9px] uppercase font-bold tracking-wider px-1 py-0.2 bg-sky-500/20 text-sky-400 rounded">
+                    <span className="text-[9px] uppercase font-bold tracking-wider px-1 py-0.2 bg-primary-500/20 text-primary-400 rounded">
                       Zoho
                     </span>
                   </div>

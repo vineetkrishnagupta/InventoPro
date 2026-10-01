@@ -73,6 +73,46 @@ export const ACCENT_COLORS = [
   },
 ]
 
+export const applyThemeClass = (mode) => {
+  if (typeof document === 'undefined') return false
+  let dark = false
+  if (mode === 'dark') {
+    dark = true
+  } else if (mode === 'light') {
+    dark = false
+  } else {
+    dark = typeof window !== 'undefined' ? window.matchMedia('(prefers-color-scheme: dark)').matches : false
+  }
+
+  if (dark) {
+    document.documentElement.classList.add('dark')
+  } else {
+    document.documentElement.classList.remove('dark')
+  }
+  return dark
+}
+
+export const applyAccentPalette = (accentId) => {
+  if (typeof document === 'undefined') return
+  const selected = ACCENT_COLORS.find(c => c.id === accentId) || ACCENT_COLORS[0]
+  const root = document.documentElement
+
+  Object.entries(selected.palette).forEach(([key, value]) => {
+    root.style.setProperty(`--color-primary-${key}`, value)
+  })
+  root.style.setProperty('--color-primary-hex', selected.colorHex)
+}
+
+// Apply immediately on script execution to avoid delay/FOUT
+if (typeof window !== 'undefined') {
+  try {
+    const initialMode = localStorage.getItem('theme_mode') || 'system'
+    const initialAccent = localStorage.getItem('theme_accent') || 'blue'
+    applyThemeClass(initialMode)
+    applyAccentPalette(initialAccent)
+  } catch {}
+}
+
 const ThemeContext = createContext({})
 
 export function ThemeProvider({ children }) {
@@ -84,41 +124,24 @@ export function ThemeProvider({ children }) {
     return localStorage.getItem('theme_accent') || 'blue'
   })
 
-  // Determine dark state
+  // Determine initial dark state
   const [isDark, setIsDark] = useState(() => {
-    const mode = localStorage.getItem('theme_mode') || 'system'
-    if (mode === 'dark') return true
-    if (mode === 'light') return false
-    return window.matchMedia('(prefers-color-scheme: dark)').matches
+    return applyThemeClass(localStorage.getItem('theme_mode') || 'system')
   })
 
   // Sync mode changes to document
   useEffect(() => {
-    const applyTheme = () => {
-      let dark = false
-      if (themeMode === 'dark') {
-        dark = true
-      } else if (themeMode === 'light') {
-        dark = false
-      } else {
-        dark = window.matchMedia('(prefers-color-scheme: dark)').matches
-      }
-
-      setIsDark(dark)
-      if (dark) {
-        document.documentElement.classList.add('dark')
-      } else {
-        document.documentElement.classList.remove('dark')
-      }
-    }
-
-    applyTheme()
+    const dark = applyThemeClass(themeMode)
+    setIsDark(dark)
     localStorage.setItem('theme_mode', themeMode)
 
     // Listen to OS changes when in system mode
-    if (themeMode === 'system') {
+    if (themeMode === 'system' && typeof window !== 'undefined') {
       const media = window.matchMedia('(prefers-color-scheme: dark)')
-      const listener = () => applyTheme()
+      const listener = () => {
+        const d = applyThemeClass('system')
+        setIsDark(d)
+      }
       media.addEventListener('change', listener)
       return () => media.removeEventListener('change', listener)
     }
@@ -126,18 +149,12 @@ export function ThemeProvider({ children }) {
 
   // Sync accent color CSS variables
   useEffect(() => {
-    const selected = ACCENT_COLORS.find(c => c.id === accentColor) || ACCENT_COLORS[0]
-    const root = document.documentElement
-
-    Object.entries(selected.palette).forEach(([key, value]) => {
-      root.style.setProperty(`--color-primary-${key}`, value)
-    })
-
+    applyAccentPalette(accentColor)
     localStorage.setItem('theme_accent', accentColor)
   }, [accentColor])
 
   const toggleTheme = () => {
-    setThemeMode(prev => (prev === 'dark' ? 'light' : 'dark'))
+    setThemeMode(isDark ? 'light' : 'dark')
   }
 
   return (

@@ -120,7 +120,7 @@ export default function Inventory() {
       {/* Summary cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: 'Total Products', value: summary.total, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-900/20' },
+          { label: 'Total Products', value: summary.total, color: 'text-primary-600 dark:text-primary-400', bg: 'bg-primary-50 dark:bg-primary-900/20' },
           { label: 'Low Stock', value: summary.low, color: 'text-yellow-600', bg: 'bg-yellow-50 dark:bg-yellow-900/20' },
           { label: 'Out of Stock', value: summary.out, color: 'text-red-600', bg: 'bg-red-50 dark:bg-red-900/20' },
           { label: 'Total Value', value: formatCurrency(summary.value), color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-900/20' },

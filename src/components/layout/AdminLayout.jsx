@@ -8,7 +8,7 @@ export default function AdminLayout() {
   const [isCollapsed, setIsCollapsed] = useState(false)
 
   return (
-    <div className="flex h-screen bg-gray-50 dark:bg-gray-950 overflow-hidden">
+    <div className="flex h-screen bg-[#f4f6f9] dark:bg-[#0f172a] text-slate-800 dark:text-slate-100 overflow-hidden">
       {/* Sidebar */}
       <Sidebar
         isOpen={sidebarOpen}

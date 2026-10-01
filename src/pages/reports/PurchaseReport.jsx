@@ -61,8 +61,8 @@ export default function PurchaseReport() {
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        <div className="card p-4"><p className="text-xs text-gray-500 mb-1">Total Purchases</p><p className="text-xl font-bold text-orange-600">{formatCurrency(summary.total)}</p></div>
-        <div className="card p-4"><p className="text-xs text-gray-500 mb-1">Total Orders</p><p className="text-xl font-bold text-blue-600">{summary.count}</p></div>
+        <div className="card p-4"><p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Total Purchases</p><p className="text-xl font-bold text-orange-600 dark:text-orange-400">{formatCurrency(summary.total)}</p></div>
+        <div className="card p-4"><p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Total Orders</p><p className="text-xl font-bold text-primary-600 dark:text-primary-400">{summary.count}</p></div>
       </div>
 
       <div className="card p-4">
